@@ -2,12 +2,13 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <bits/stdc++.h>
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_statistics.h>
 
 #include <armadillo>
+
+#include "condition.h"
 
 #define rep(a, b)   for(int a = 0; a < (b); ++a)
 #define debug(x)    clog << #x << " = " << x << endl;
