@@ -4,7 +4,7 @@ project(ParallelPC)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
-set(SOURCE_FILES main.cpp)
+set(SOURCE_FILES main.cpp graph.hpp graph.cpp)
 add_executable(ParallelPC ${SOURCE_FILES})
 
 set_target_properties(
