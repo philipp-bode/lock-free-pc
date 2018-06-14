@@ -19,3 +19,11 @@ To install these dependencies on MacOS using homebrew run:
 brew install gsl
 brew install armadillo
 ```
+#### On UNIX
+
+To install these dependencies on Unix run:
+
+```sh
+sudo apt install libgsl-dev
+sudo apt install libarmadillo-dev
+```
