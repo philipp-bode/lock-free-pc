@@ -2,7 +2,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <bits/stdc++.h>
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_statistics.h>
