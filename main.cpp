@@ -26,25 +26,25 @@ using namespace std;
 class PCAlgorithm {
 
   public:
-    uint size, level;
+    uint nr_variables, level;
     const int STRIDE = 1;
 
     arma::Mat<unsigned char> _adjacencies;
     arma::Mat<unsigned char> _updated_adjacencies;
     arma::Mat<double>_correlation;
     
-    PCAlgorithm(int n) {
-        size = n;
+    PCAlgorithm(int vars) {
+        nr_variables = vars;
         level = 0;
-        _adjacencies = arma::Mat<unsigned char>(size, size, arma::fill::ones);
-        _updated_adjacencies = arma::Mat<unsigned char>(size, size, arma::fill::ones);
-        _correlation = arma::Mat<double>(size, size, arma::fill::eye);
+        _adjacencies = arma::Mat<unsigned char>(nr_variables, nr_variables, arma::fill::ones);
+        _updated_adjacencies = arma::Mat<unsigned char>(nr_variables, nr_variables, arma::fill::ones);
+        _correlation = arma::Mat<double>(nr_variables, nr_variables, arma::fill::eye);
     }
 
     std::vector<uint> adjacent_vertices(const uint vertex) {
         std::vector<uint> adj;
-        adj.reserve(size);
-        rep(i, size) {
+        adj.reserve(nr_variables);
+        rep(i, nr_variables) {
             if (_adjacencies(i, vertex)) {
                 adj.push_back(i);
             }
@@ -62,16 +62,15 @@ class PCAlgorithm {
     }
 
     void build_correlation_matrix(std::vector<std::vector<double>> &data) {
-
-        rep(i, size) {
+        int n = data[0].size();
+        rep(i, nr_variables) {
             rep(j, i) {
-                gsl_vector_const_view gsl_x = gsl_vector_const_view_array( &data[i][0], data[i].size());
-                gsl_vector_const_view gsl_y = gsl_vector_const_view_array( &data[j][0], data[j].size());
-
+                gsl_vector_const_view gsl_x = gsl_vector_const_view_array( &data[i][0], n);
+                gsl_vector_const_view gsl_y = gsl_vector_const_view_array( &data[j][0], n);
                 double pearson = gsl_stats_correlation(
                     gsl_x.vector.data, STRIDE,
                     gsl_y.vector.data, STRIDE,
-                    size
+                    n
                 );
                 _correlation(i,j) = _correlation(j,i) = pearson;
             }
@@ -113,7 +112,7 @@ class PCAlgorithm {
         // Absolute value of z statistic
         // Note: log1p for more numerical stability, see "Aaux.R"; log1p is also available in
         // header <cmath>, but probably only on quite up to date headers (C++11)?
-        absz = sqrt(size - S.size() - 3.0) * 0.5 * boost::math::log1p(2*r/(1 - r));
+        absz = sqrt(nr_variables - S.size() - 3.0) * 0.5 * boost::math::log1p(2*r/(1 - r));
 
         // Calculate p-value to z statistic (based on standard normal distribution)
         boost::math::normal distN;
@@ -157,16 +156,15 @@ int main(int argc, char* argv[])
 
     alg.build_correlation_matrix(data);
 
-
     alg._correlation.print(cout);
 
-    std::vector<uint> sep1 = {5};
-    std::vector<uint> sep2 = {3};
-    std::vector<uint> sep3 = {5};
+    // std::vector<uint> sep1 = {5};
+    // std::vector<uint> sep2 = {3};
+    // std::vector<uint> sep3 = {5};
 
-    cout << alg.test(3,4, sep1) << endl;
-    cout << alg.test(4,5, sep2) << endl;
-    cout << alg.test(0,1, sep3) << endl;
+    // cout << alg.test(3,4, sep1) << endl;
+    // cout << alg.test(4,5, sep2) << endl;
+    // cout << alg.test(0,1, sep3) << endl;
 
 
 
