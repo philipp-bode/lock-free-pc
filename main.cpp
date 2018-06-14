@@ -1,4 +1,6 @@
 
+#include "graph.hpp"
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -28,36 +30,13 @@ class PCAlgorithm {
     uint nr_variables, level;
     const int STRIDE = 1;
 
-    arma::Mat<unsigned char> _adjacencies;
-    arma::Mat<unsigned char> _updated_adjacencies;
     arma::Mat<double>_correlation;
-    
-    PCAlgorithm(int vars) {
+    Graph _graph;
+
+    PCAlgorithm(int vars): _graph(nr_variables) {
         nr_variables = vars;
         level = 0;
-        _adjacencies = arma::Mat<unsigned char>(nr_variables, nr_variables, arma::fill::ones);
-        _updated_adjacencies = arma::Mat<unsigned char>(nr_variables, nr_variables, arma::fill::ones);
         _correlation = arma::Mat<double>(nr_variables, nr_variables, arma::fill::eye);
-    }
-
-    std::vector<uint> adjacent_vertices(const uint vertex) {
-        std::vector<uint> adj;
-        adj.reserve(nr_variables);
-        rep(i, nr_variables) {
-            if (_adjacencies(i, vertex)) {
-                adj.push_back(i);
-            }
-        }
-        return adj;
-    }
-
-    void remove_edge(const uint x, const uint y) {
-        _updated_adjacencies(x, y) = 0;
-        _updated_adjacencies(y, x) = 0;
-    }
-
-    void sync_graph() {
-        _adjacencies = _updated_adjacencies;
     }
 
     void build_correlation_matrix(std::vector<std::vector<double>> &data) {
