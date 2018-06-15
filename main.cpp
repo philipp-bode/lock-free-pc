@@ -117,14 +117,14 @@ int main(int argc, char* argv[])
 
     alg._correlation.print(cout);
 
-    std::vector<uint> sep1 = {5};
-    std::vector<uint> sep2 = {3};
-    std::vector<uint> sep3 = {5};
+    // std::vector<uint> sep1 = {5};
+    // std::vector<uint> sep2 = {3};
+    // std::vector<uint> sep3 = {5};
 
-    IndepTestGauss indepTest(6,alg._correlation);
-    cout << indepTest.test(3,4, {5}) << endl;
-    cout << indepTest.test(4,5, sep2) << endl;
-    cout << indepTest.test(0,1, sep3) << endl;
+    // IndepTestGauss indepTest(6,alg._correlation);
+    // cout << indepTest.test(3,4, {5}) << endl;
+    // cout << indepTest.test(4,5, sep2) << endl;
+    // cout << indepTest.test(0,1, sep3) << endl;
 
 
 
