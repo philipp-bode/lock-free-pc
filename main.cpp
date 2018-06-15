@@ -52,12 +52,12 @@ public:
 
                     for(int j = 0; j < adj.size() && adj[j] < current_node; j++) {
                         std::vector<int> S(adj);
-                        S.erase(S.begin()+j); // Y should not be in Z for X ⊥ Y | Z
+                        S.erase(S.begin()+j); // Y should not be in Z for X ⊥ Y | Y
                         // generating subsets by iteratively combining one element with l-1 following elements until
                         // this element was combined with all following elements
-                        std::vector<int> subset(S.begin()+v-level+1, S.begin() +v);
                         for(int u = 0; u+level <= S.size(); u++) {
                             for(int v=level; v < S.size(); v++) {
+                                std::vector<int> subset(S.begin()+v-level+1, S.begin() +v);
                                 subset.push_back(S[u]);
                                 auto p = indepTest.test(current_node,adj[j],subset);
                                 if((1-p) < _alpha) {
