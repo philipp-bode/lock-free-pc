@@ -56,45 +56,30 @@ public:
                         std::vector<int> S(adj);
                         S.erase(S.begin() + j); // Y should not be in S for X ⊥ Y | S
 
-                        cout << "  " << "S(" << S.size() << "): ";
-                        for(auto s : S)
-                            cout << s << ", ";
-                        cout << endl;
+                        cout << "  " << "S: ";
+                        print_vector(S);
 
                         // generating subsets by iteratively combining one element with l-1 following elements until
                         // this element was combined with all following elements
-                        for(int u = 0; u + level <= S.size(); u++) {
-                            for(int v = level; v < S.size(); v++) {
-                                std::vector<int> subset(S.begin() + v - level + 1, S.begin() + v); //evaluates to an empty subset on first level because the iterators are equivalent
-                                subset.push_back(S[u]);// TODO: may lead to duplicates in set on higher levels
+                        for (std::vector<int> subset : getSubsets(S, level)) {
+                            cout << "  " <<  "Subset: ";
+                            print_vector(subset);
 
-                                cout << "  " <<  "Subset(" << subset.size() << "): ";
-                                for(auto sub : subset)
-                                    cout << sub << ", ";
-                                cout << endl;
-
-                                auto p = indepTest.test(current_node,adj[j],subset);
-                                if((1-p) < _alpha) {
-                                    edges_to_delete.emplace_back(current_node,adj[j]);
-                                    _seperation_sets.push_back({{current_node,adj[j]}, subset});
-                                    cout << "Node deleted" << endl;
-                                    goto endloop;
-                                }
-
-                                //TODO: only workaround for now
-                                if(level == 1) {
-                                    break;
-                                }
+                            auto p = indepTest.test(current_node,adj[j],subset);
+                            if((1-p) < _alpha) {
+                                edges_to_delete.emplace_back(current_node,adj[j]);
+                                _seperation_sets.push_back({{current_node,adj[j]}, subset});
+                                cout << "  Node deleted" << endl;
+                                break;
                             }
                         }
-                        endloop:
-                        ;
                     }
                 } else {
                     // if they have not enough neighbors for this level, they won't on the following
                     nodes_to_delete.push_back(current_node);
-                    cout << "-"<< endl;
+                    cout << "-";
                 }
+                cout << endl;
             }
 
             for(const auto edge : edges_to_delete) {
@@ -104,8 +89,14 @@ public:
                 nodes_to_be_tested.erase(node);
             }
             level++;
-            cout << endl;
+            cout << "------------------------------------" << endl;
         }
+    }
+
+    void print_vector(const vector<int> &S) const {
+        for(auto s : S)
+            cout << s << " ";
+        cout << endl;
     }
 
     void print_graph() {
@@ -143,6 +134,31 @@ protected:
     double _alpha;
     vector<pair<pair<int, int>, vector<int> > > _seperation_sets;
 
+    std::vector<std::vector<int>> getSubsets(const std::vector<int> &S, int k) {
+        size_t num_elements = S.size();
+        std::vector<int> help (num_elements, 0);
+        std::vector<std::vector<int>> out;
+
+        for (int i = 0; i < k; i++) {
+            help[i] = 1;
+        }
+        std::next_permutation(help.begin(), help.end());
+
+        do {
+            std::vector<int> tmp_vec (k);
+            int i = 0, j = 0;
+            while (i < num_elements && j < k) {
+                if (help[i] == 1) {
+                    tmp_vec[j] = S[i];
+                    j++;
+                }
+                i++;
+            }
+            out.push_back(tmp_vec);
+        } while (std::next_permutation(help.begin(), help.end()));
+
+        return out;
+    }
 };
 
 std::vector<std::vector<double>> read_data() {
