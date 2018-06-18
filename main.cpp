@@ -36,34 +36,54 @@ public:
         IndepTestGauss indepTest(_nr_variables,_correlation);
 
         int level = 1;
-        std::unordered_set<int> not_done;
-        for (int i = 0; i < _nr_variables; ++i) not_done.insert(not_done.end(),i);
+        std::unordered_set<int> nodes_to_be_tested;
+        for (int i = 0; i < _nr_variables; ++i) nodes_to_be_tested.insert(nodes_to_be_tested.end(), i);
 
         // we want to run as long as their are edges remaining to test on a higher level
-        while(not_done.size()) {
+        while(!nodes_to_be_tested.empty()) {
+            cout << "Level: " << level << endl;
             std::vector<pair<int,int> > edges_to_delete(0);
             std::vector<int> nodes_to_delete(0);
             // iterate over all edges to determine if they still can be tested on this level
-            for(auto it = not_done.begin(); it != not_done.end(); it++) {
-                auto current_node = *it;
-                auto adj = _graph.getNeighbours(*it);
-                // only do the independence testing if the node has enough neighbours do create a seperation set
+            for (int current_node : nodes_to_be_tested) {
+                cout << "Current node (X): " << current_node << endl;
+                auto adj = _graph.getNeighbours(current_node);
+                // only do the independence testing if the current_node has enough neighbours do create a separation set
                 if(adj.size()-1 >= level) {
-
+                    // j is the index in the adj-Matrix for the currently tested neighbour -> adj[j] = Y
                     for(int j = 0; j < adj.size() && adj[j] < current_node; j++) {
+                        cout << "j: " << j << ", Y: " << adj[j] << endl;
                         std::vector<int> S(adj);
-                        S.erase(S.begin()+j); // Y should not be in Z for X ⊥ Y | Y
+                        S.erase(S.begin() + j); // Y should not be in S for X ⊥ Y | S
+
+                        cout << "  " << "S(" << S.size() << "): ";
+                        for(auto s : S)
+                            cout << s << ", ";
+                        cout << endl;
+
                         // generating subsets by iteratively combining one element with l-1 following elements until
                         // this element was combined with all following elements
-                        for(int u = 0; u+level <= S.size(); u++) {
-                            for(int v=level; v < S.size(); v++) {
-                                std::vector<int> subset(S.begin()+v-level+1, S.begin() +v);
-                                subset.push_back(S[u]);
+                        for(int u = 0; u + level <= S.size(); u++) {
+                            for(int v = level; v < S.size(); v++) {
+                                std::vector<int> subset(S.begin() + v - level + 1, S.begin() + v); //evaluates to an empty subset on first level because the iterators are equivalent
+                                subset.push_back(S[u]);// TODO: may lead to duplicates in set on higher levels
+
+                                cout << "  " <<  "Subset(" << subset.size() << "): ";
+                                for(auto sub : subset)
+                                    cout << sub << ", ";
+                                cout << endl;
+
                                 auto p = indepTest.test(current_node,adj[j],subset);
                                 if((1-p) < _alpha) {
-                                    edges_to_delete.push_back({current_node,adj[j]});
+                                    edges_to_delete.emplace_back(current_node,adj[j]);
                                     _seperation_sets.push_back({{current_node,adj[j]}, subset});
+                                    cout << "Node deleted" << endl;
                                     goto endloop;
+                                }
+
+                                //TODO: only workaround for now
+                                if(level == 1) {
+                                    break;
                                 }
                             }
                         }
@@ -73,16 +93,18 @@ public:
                 } else {
                     // if they have not enough neighbors for this level, they won't on the following
                     nodes_to_delete.push_back(current_node);
+                    cout << "-"<< endl;
                 }
             }
 
             for(const auto edge : edges_to_delete) {
                 _graph.deleteEdge(edge.first, edge.second);
             }
-            for(const auto node : nodes_to_delete) {
-                not_done.erase(node);
+            for(const auto node: nodes_to_delete) {
+                nodes_to_be_tested.erase(node);
             }
             level++;
+            cout << endl;
         }
     }
 
@@ -125,7 +147,7 @@ protected:
 
 std::vector<std::vector<double>> read_data() {
     // std::freopen("Scerevisiae.csv", "r", stdin);
-    std::freopen("cooling_house.data", "r", stdin);
+    std::freopen("../cooling_house.data", "r", stdin);
     int variables, observations;
     double next_val;
 
