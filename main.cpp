@@ -52,26 +52,10 @@ public:
                 if(adj.size()-1 >= level) {
                     // j is the index in the adj-Matrix for the currently tested neighbour -> adj[j] = Y
                     for(int j = 0; j < adj.size() && adj[j] < current_node; j++) {
-                        cout << "j: " << j << ", Y: " << adj[j] << endl;
-                        std::vector<int> S(adj);
-                        S.erase(S.begin() + j); // Y should not be in S for X ⊥ Y | S
+                        vector<int> s(adj);
+                        s.erase(s.begin() + j); // Y should not be in S for X ⊥ Y | S
 
-                        cout << "  " << "S: ";
-                        print_vector(S);
-
-                        // iterates over all subsets of s with size of level
-                        for (std::vector<int> subset : getSubsets(S, level)) {
-                            cout << "  " <<  "Subset: ";
-                            print_vector(subset);
-
-                            auto p = indepTest.test(current_node,adj[j],subset);
-                            if((1-p) < _alpha) {
-                                edges_to_delete.emplace_back(current_node,adj[j]);
-                                _seperation_sets.push_back({{current_node,adj[j]}, subset});
-                                cout << "  Node deleted" << endl;
-                                break;
-                            }
-                        }
+                        process_edge(indepTest, level, edges_to_delete, current_node, adj[j], s);
                     }
                 } else {
                     // if they have not enough neighbors for this level, they won't on the following
@@ -92,10 +76,25 @@ public:
         }
     }
 
-    void print_vector(const vector<int> &S) const {
-        for(auto s : S)
-            cout << s << " ";
-        cout << endl;
+    void process_edge(IndepTestGauss &indepTest, int level, vector<pair<int, int>> &edges_to_delete, int x, int y,
+                     const vector<int> &s) {
+        cout << "Y: " << y << endl;
+        cout << "  " << "S: ";
+        print_vector(s);
+
+        // iterates over all subsets of s with size of level
+        for (vector<int> subset : getSubsets(s, level)) {
+            cout << "  " <<  "Subset: ";
+            print_vector(subset);
+
+            auto p = indepTest.test(x, y, subset);
+            if((1-p) < _alpha) {
+                edges_to_delete.emplace_back(x, y);
+                _seperation_sets.push_back({{x, y}, subset});
+                cout << "  Node deleted" << endl;
+                break;
+            }
+        }
     }
 
     void print_graph() {
@@ -157,6 +156,12 @@ protected:
         } while (std::next_permutation(mask.begin(), mask.end()));
 
         return out;
+    }
+
+    void print_vector(const vector<int> &S) const {
+        for(auto s : S)
+            cout << s << " ";
+        cout << endl;
     }
 };
 
