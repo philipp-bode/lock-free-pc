@@ -59,8 +59,7 @@ public:
                         cout << "  " << "S: ";
                         print_vector(S);
 
-                        // generating subsets by iteratively combining one element with l-1 following elements until
-                        // this element was combined with all following elements
+                        // iterates over all subsets of s with size of level
                         for (std::vector<int> subset : getSubsets(S, level)) {
                             cout << "  " <<  "Subset: ";
                             print_vector(subset);
@@ -136,26 +135,26 @@ protected:
 
     std::vector<std::vector<int>> getSubsets(const std::vector<int> &S, int k) {
         size_t num_elements = S.size();
-        std::vector<int> help (num_elements, 0);
+        std::vector<int> mask (num_elements, 0);
         std::vector<std::vector<int>> out;
 
         for (int i = 0; i < k; i++) {
-            help[i] = 1;
+            mask[i] = 1;
         }
-        std::next_permutation(help.begin(), help.end());
+        std::next_permutation(mask.begin(), mask.end());
 
         do {
             std::vector<int> tmp_vec (k);
             int i = 0, j = 0;
             while (i < num_elements && j < k) {
-                if (help[i] == 1) {
+                if (mask[i] == 1) {
                     tmp_vec[j] = S[i];
                     j++;
                 }
                 i++;
             }
             out.push_back(tmp_vec);
-        } while (std::next_permutation(help.begin(), help.end()));
+        } while (std::next_permutation(mask.begin(), mask.end()));
 
         return out;
     }
