@@ -33,7 +33,7 @@ public:
 
     void build_graph() {
         _correlation.print(cout);
-        IndepTestGauss indepTest(_nr_variables,_correlation);
+        IndepTestGauss indepTest(_nr_samples,_correlation);
 
         int level = 1;
         std::unordered_set<int> nodes_to_be_tested;
@@ -51,7 +51,7 @@ public:
                 // only do the independence testing if the current_node has enough neighbours do create a separation set
                 if((int)adj.size()-1 >= level) {
                     // j is the index in the adj-Matrix for the currently tested neighbour -> adj[j] = Y
-                    for(int j = 0; j < adj.size() && adj[j] < current_node; j++) {
+                    for(int j = 0; j < adj.size(); j++) {
                         vector<int> s(adj);
                         s.erase(s.begin() + j); // Y should not be in S for X ⊥ Y | S
 
@@ -120,13 +120,14 @@ public:
         }
     }
 
-    PCAlgorithm(int vars, double alpha): _graph(vars), _alpha(alpha), _nr_variables(vars) {
+    PCAlgorithm(int vars, double alpha, int samples): _graph(vars), _alpha(alpha), _nr_variables(vars), _nr_samples(samples) {
         _correlation = arma::Mat<double>(vars, vars, arma::fill::eye);
     }
 
 protected:
     const int STRIDE = 1;
     int _nr_variables;
+    int _nr_samples;
     arma::Mat<double>_correlation;
     Graph _graph;
     double _alpha;
@@ -196,7 +197,7 @@ int main(int argc, char* argv[])
     // kann man überlegen, ob man das nicht auch in die Klasse mit rein zieht
     auto data = read_data();
 
-    PCAlgorithm alg(data.size(), 0.1);
+    PCAlgorithm alg(data.size(), 0.1, data[0].size());
 
     alg.build_correlation_matrix(data);
 
