@@ -49,7 +49,7 @@ public:
                 cout << "Current node (X): " << current_node << endl;
                 auto adj = _graph.getNeighbours(current_node);
                 // only do the independence testing if the current_node has enough neighbours do create a separation set
-                if(adj.size()-1 >= level) {
+                if((int)adj.size()-1 >= level) {
                     // j is the index in the adj-Matrix for the currently tested neighbour -> adj[j] = Y
                     for(int j = 0; j < adj.size() && adj[j] < current_node; j++) {
                         vector<int> s(adj);
@@ -88,7 +88,7 @@ public:
             print_vector(subset);
 
             auto p = indepTest.test(x, y, subset);
-            if((1-p) < _alpha) {
+            if(p >= _alpha) {
                 edges_to_delete.emplace_back(x, y);
                 _seperation_sets.push_back({{x, y}, subset});
                 cout << "  Node deleted" << endl;
