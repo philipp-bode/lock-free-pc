@@ -53,5 +53,12 @@ double IndepTestGauss::test(int u, int v, std::vector<int> S)
 
 	// Calculate p-value to z statistic (based on standard normal distribution)
 	boost::math::normal distN;
-	return (2*boost::math::cdf(boost::math::complement(distN, absz)));
+	double p = (2*boost::math::cdf(boost::math::complement(distN, absz)));
+
+	std::cout << "Indep(" << u << ',' << v << "|{";
+	for (auto const &s: S) {
+		std::cout << s << ',';
+	}
+	std::cout << "}) = " << p << std::endl;
+	return p;
 }
