@@ -14,14 +14,14 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/dynamic_bitset.hpp>
 
-double IndepTestGauss::test(uint u, uint v, std::vector<uint> S)
+double IndepTestGauss::test(int u, int v, std::vector<int> S)
 {
 	// Return NaN if any of the correlation coefficients needed for calculation is NaN
 	arma::mat C_sub;
 	arma::uvec ind(S.size() + 2);
 	ind(0) = u;
 	ind(1) = v;
-	uint i, j;
+	int i, j;
 	for (i = 0; i < S.size(); ++i) ind(i + 2) = S[i];
 	C_sub = _correlation.submat(ind, ind);
 	for (i = 0; i < C_sub.n_rows; ++i)

@@ -38,7 +38,7 @@ public:
      * @param	S	Conditioning set
      * @return	p-value for independence test of X_u and X_v given X_S
      */
-    virtual double test(uint u, uint v, std::vector<uint> S) = 0;
+    virtual double test(int u, int v, std::vector<int> S) = 0;
 };
 
 /**
@@ -50,13 +50,13 @@ protected:
     /**
      * Sufficient statistic for easier access in independence test
      */
-    uint _sampleSize;
+    int _sampleSize;
     arma::mat _correlation;
 
 public:
-    IndepTestGauss(uint sampleSize, arma::Mat<double>& cor) :
+    IndepTestGauss(int sampleSize, arma::Mat<double>& cor) :
             _sampleSize(sampleSize),
             _correlation(cor) {}
 
-    virtual double test(uint u, uint v, std::vector<uint> S);
+    virtual double test(int u, int v, std::vector<int> S);
 };

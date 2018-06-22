@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 set(SOURCE_FILES main.cpp condition.h condition.cpp graph.hpp graph.cpp)
 
+message("${CMAKE_MODULES_PATH}")
+
 add_executable(ParallelPC ${SOURCE_FILES})
 
 set_target_properties(
@@ -17,7 +19,7 @@ set_target_properties(
 find_package(GSL REQUIRED)
 
 find_package(Armadillo REQUIRED)
-find_package(boost REQUIRED)
+find_package(Boost REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 target_link_libraries(ParallelPC
