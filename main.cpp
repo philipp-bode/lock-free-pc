@@ -1,10 +1,12 @@
 
 #include "graph.hpp"
+#include "threadsafe_queue.cpp"
 
 #include <iostream>
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
+#include <thread>
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_statistics.h>
@@ -13,6 +15,8 @@
 
 
 #include "condition.h"
+#include "concurrentqueue/concurrentqueue.h"
+#include "concurrentqueue/blockingconcurrentqueue.h"
 
 #include <boost/math/special_functions/log1p.hpp>
 #include <boost/math/distributions/normal.hpp>
@@ -23,17 +27,46 @@
 #define rep(a, b)   for(int a = 0; a < (b); ++a)
 #define debug(x)    clog << #x << " = " << x << endl;
 #define all(a)      (a).begin(),(a).end()
-#define endl '\n'
+// #define endl '\n'
 
 using namespace std;
+
+struct TestInstruction {
+    int level;
+    int X;
+    int Y;
+    vector<int> adj;
+
+    TestInstruction() : level(0), X(0), Y(0), adj({})
+    {}
+
+    TestInstruction(int l, int x, int y, vector<int> a) : level(l), X(x), Y(y), adj(a)
+    {}
+};
+
+struct TestResult{
+    int X;
+    int Y;
+    vector<int> S;
+
+    TestResult() : X(0), Y(0), S({})
+    {}
+
+    TestResult(int x, int y, vector<int> s) : X(x), Y(y), S(s)
+    {}
+};
 
 class PCAlgorithm {
 
 public:
+    moodycamel::BlockingConcurrentQueue<TestInstruction> _work_queue;
+    moodycamel::BlockingConcurrentQueue<TestResult> _result_queue;
+    IndepTestGauss *_gauss_test;
+    double _alpha;
 
     void build_graph() {
-        _correlation.print(cout);
-        IndepTestGauss indepTest(_nr_samples,_correlation);
+        // _correlation.print(cout);
+        _gauss_test = new IndepTestGauss(_nr_samples,_correlation);
 
         int level = 1;
         std::unordered_set<int> nodes_to_be_tested;
@@ -41,12 +74,9 @@ public:
 
         // we want to run as long as their are edges remaining to test on a higher level
         while(!nodes_to_be_tested.empty()) {
-            cout << "Level: " << level << endl;
-            std::vector<pair<int,int> > edges_to_delete(0);
             std::vector<int> nodes_to_delete(0);
             // iterate over all edges to determine if they still can be tested on this level
             for (int current_node : nodes_to_be_tested) {
-                cout << "Current node (X): " << current_node << endl;
                 auto adj = _graph.getNeighbours(current_node);
                 // only do the independence testing if the current_node has enough neighbours do create a separation set
                 if((int)adj.size()-1 >= level) {
@@ -54,46 +84,34 @@ public:
                     for(int j = 0; j < adj.size(); j++) {
                         vector<int> s(adj);
                         s.erase(s.begin() + j); // Y should not be in S for X ⊥ Y | S
-
-                        process_edge(indepTest, level, edges_to_delete, current_node, adj[j], s);
+                        _work_queue.enqueue(TestInstruction(level, current_node, adj[j], s));
                     }
                 } else {
                     // if they have not enough neighbors for this level, they won't on the following
                     nodes_to_delete.push_back(current_node);
-                    cout << "-";
                 }
                 cout << endl;
             }
 
-            for(const auto edge : edges_to_delete) {
-                _graph.deleteEdge(edge.first, edge.second);
+            TestResult result;
+            _result_queue.wait_dequeue(result);
+
+            while(true) {
+                cout << "o" << endl;
+                bool found = _result_queue.try_dequeue(result);
+                if(!found) {
+                    if (!_work_queue.size_approx()) break;
+                } else {
+                    _graph.deleteEdge(result.X, result.Y);
+                    _seperation_sets.push_back(result);
+                }
             }
+
             for(const auto node: nodes_to_delete) {
                 nodes_to_be_tested.erase(node);
             }
+            print_graph();
             level++;
-            cout << "------------------------------------" << endl;
-        }
-    }
-
-    void process_edge(IndepTestGauss &indepTest, int level, vector<pair<int, int>> &edges_to_delete, int x, int y,
-                     const vector<int> &s) {
-        cout << "Y: " << y << endl;
-        cout << "  " << "S: ";
-        print_vector(s);
-
-        // iterates over all subsets of s with size of level
-        for (vector<int> subset : getSubsets(s, level)) {
-            cout << "  " <<  "Subset: ";
-            print_vector(subset);
-
-            auto p = indepTest.test(x, y, subset);
-            if(p >= _alpha) {
-                edges_to_delete.emplace_back(x, y);
-                _seperation_sets.push_back({{x, y}, subset});
-                cout << "  Node deleted" << endl;
-                break;
-            }
         }
     }
 
@@ -130,34 +148,7 @@ protected:
     int _nr_samples;
     arma::Mat<double>_correlation;
     Graph _graph;
-    double _alpha;
-    vector<pair<pair<int, int>, vector<int> > > _seperation_sets;
-
-    std::vector<std::vector<int>> getSubsets(const std::vector<int> &S, int k) {
-        size_t num_elements = S.size();
-        std::vector<int> mask (num_elements, 0);
-        std::vector<std::vector<int>> out;
-
-        for (int i = 0; i < k; i++) {
-            mask[i] = 1;
-        }
-        std::next_permutation(mask.begin(), mask.end());
-
-        do {
-            std::vector<int> tmp_vec (k);
-            int i = 0, j = 0;
-            while (i < num_elements && j < k) {
-                if (mask[i] == 1) {
-                    tmp_vec[j] = S[i];
-                    j++;
-                }
-                i++;
-            }
-            out.push_back(tmp_vec);
-        } while (std::next_permutation(mask.begin(), mask.end()));
-
-        return out;
-    }
+    vector<TestResult> _seperation_sets;
 
     void print_vector(const vector<int> &S) const {
         for(auto s : S)
@@ -165,6 +156,42 @@ protected:
         cout << endl;
     }
 };
+
+void worker(PCAlgorithm &alg) {
+    while(true) {
+        TestInstruction test;
+        bool found = false;
+        while(!found) {
+            found = alg._work_queue.try_dequeue(test);
+        }
+
+        size_t num_elements = test.adj.size();
+        std::vector<int> mask (num_elements, 0);
+
+        for (int i = 0; i < test.level; i++) {
+            mask[i] = 1;
+        }
+        std::next_permutation(mask.begin(), mask.end());
+
+        do {
+            std::vector<int> subset(test.level);
+            int i = 0, j = 0;
+            while (i < num_elements && j < test.level) {
+                if (mask[i] == 1) {
+                    subset[j] = test.adj[i];
+                    j++;
+                }
+                i++;
+            }
+            auto p = alg._gauss_test->test(test.X, test.Y, subset);
+            if(p >= alg._alpha) {
+                alg._result_queue.enqueue(TestResult(test.X, test.Y, subset));
+                break;
+            }
+        } while (std::next_permutation(mask.begin(), mask.end()));
+
+    }
+}
 
 std::vector<std::vector<double>> read_data() {
     // std::freopen("Scerevisiae.csv", "r", stdin);
@@ -201,9 +228,13 @@ int main(int argc, char* argv[])
 
     alg.build_correlation_matrix(data);
 
+    std::thread t1(worker, std::ref(alg));
+    std::thread t2(worker, std::ref(alg));
+
     alg.build_graph();
 
     alg.print_graph();
+
 
     // std::vector<uint> sep1 = {5};
     // std::vector<uint> sep2 = {3};
@@ -214,7 +245,13 @@ int main(int argc, char* argv[])
     // cout << indepTest.test(4,5, sep2) << endl;
     // cout << indepTest.test(0,1, sep3) << endl;
 
-
+    // alg._work_queue.enqueue(TestInstruction(1,56,57, vector<int>{1,2,3,4}));
+    // TestInstruction test;
+    // cout << "Aprrox. Size: " << alg._work_queue.size_approx() << endl;
+    // bool found = alg._work_queue.try_dequeue(test);
+    // cout << "Found: " << found << endl;
+    // cout << test.X << '|' << test.Y << endl;
+    // cout << "Aprrox. Size: " << alg._work_queue.size_approx() << endl;
 
     cout.flush();
     return 0;

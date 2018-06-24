@@ -15,6 +15,7 @@ void Graph::deleteEdge(int node_x, int node_y) {
 
 std::vector<int> Graph::getNeighbours(int node_id) const {
 	std::vector<int> result;
+	result.reserve(_num_nodes);
 	for (int i = 0; i < _num_nodes; ++i)
 	{
 		if(_adjacencies.at(i,node_id) && i != node_id) {
