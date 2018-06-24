@@ -15,7 +15,6 @@
 
 
 #include "condition.h"
-#include "concurrentqueue/concurrentqueue.h"
 #include "concurrentqueue/blockingconcurrentqueue.h"
 
 #include <boost/math/special_functions/log1p.hpp>
@@ -92,18 +91,23 @@ public:
                 }
                 cout << endl;
             }
+            cout << "Queued all tests, waiting for results.." << endl;
 
             TestResult result;
             _result_queue.wait_dequeue(result);
+            cout << "Received first result.." << endl;
 
             while(true) {
-                cout << "o" << endl;
+                _graph.deleteEdge(result.X, result.Y);
+                _seperation_sets.push_back(result);
                 bool found = _result_queue.try_dequeue(result);
                 if(!found) {
-                    if (!_work_queue.size_approx()) break;
-                } else {
-                    _graph.deleteEdge(result.X, result.Y);
-                    _seperation_sets.push_back(result);
+                    if (!_work_queue.size_approx()) {
+                        cout << "No more tests in _work_queue.." << endl;
+                        break;
+                    } else {
+                        _result_queue.wait_dequeue(result);
+                    }
                 }
             }
 
@@ -160,10 +164,7 @@ protected:
 void worker(PCAlgorithm &alg) {
     while(true) {
         TestInstruction test;
-        bool found = false;
-        while(!found) {
-            found = alg._work_queue.try_dequeue(test);
-        }
+        alg._work_queue.wait_dequeue(test);
 
         size_t num_elements = test.adj.size();
         std::vector<int> mask (num_elements, 0);
