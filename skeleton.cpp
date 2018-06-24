@@ -50,6 +50,10 @@ void PCAlgorithm::build_graph() {
         for(auto thread : threads) {
             thread->join();
         }
+
+        threads.resize(0);
+        workers.resize(0);
+        
         cout << "All tests done, working on _result_queue.." << endl;
 
         TestResult result;
@@ -62,9 +66,6 @@ void PCAlgorithm::build_graph() {
         }
         
         cout << "No more tests in _result_queue.." << endl;
-
-        threads.resize(0);
-        workers.resize(0);
         
         for(const auto node: nodes_to_delete) {
             nodes_to_be_tested.erase(node);
