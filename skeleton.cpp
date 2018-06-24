@@ -4,8 +4,8 @@
 PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads): _graph(vars), _alpha(alpha), _nr_variables(vars), _nr_samples(samples), _nr_threads(numberThreads){
     _correlation = arma::Mat<double>(vars, vars, arma::fill::eye);
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
-    _work_queue = std::make_shared<moodycamel::BlockingConcurrentQueue<TestInstruction> >();
-    _result_queue = std::make_shared<moodycamel::BlockingConcurrentQueue<TestResult> >();
+    _work_queue = std::make_shared<moodycamel::ConcurrentQueue<TestInstruction> >();
+    _result_queue = std::make_shared<moodycamel::ConcurrentQueue<TestResult> >();
 }
 
 void PCAlgorithm::build_graph() {
@@ -36,34 +36,32 @@ void PCAlgorithm::build_graph() {
         }
         cout << "Queued all tests, waiting for results.." << endl;
 
-        TestResult result{0,0,{}};
-        _result_queue->wait_dequeue(result);
-        cout << "Received first result.." << endl;
-
         vector<shared_ptr<thread> > threads;
         vector<shared_ptr<Worker> > workers;
 
-
         rep(i,_nr_threads) {
-            workers.emplace_back(_work_queue, _result_queue, this);
-            threads.emplace_back(&Worker::execute, *workers[i]);
+            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this()));
+            threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
         }
 
-        // std::thread t1(&Worker::execute, Worker(test_queue, result_queue));
+        // std::thread t1(&Worker::execute_test, Worker(test_queue, result_queue));
 
-        while(true) {
+
+        for(auto thread : threads) {
+            thread->join();
+        }
+        cout << "All tests done, working on _result_queue.." << endl;
+
+        TestResult result;
+
+
+        // If we really need a lot of synchronization here we could think about scheduling deticated tasks here again 
+        while(_result_queue->try_dequeue(result)) { 
             _graph.deleteEdge(result.X, result.Y);
             _seperation_sets.push_back(result);
-            bool found = _result_queue->try_dequeue(result);
-            if(!found) {
-                if (!_work_queue->size_approx()) {
-                    cout << "No more tests in _work_queue.." << endl;
-                    break;
-                } else {
-                    _result_queue->wait_dequeue(result);
-                }
-            }
         }
+        
+        cout << "No more tests in _result_queue.." << endl;
 
         threads.resize(0);
         workers.resize(0);

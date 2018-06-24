@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <memory>
-#include "concurrentqueue/blockingconcurrentqueue.h"
+#include "concurrentqueue/concurrentqueue.h"
 
 struct TestInstruction {
     int level;
@@ -17,5 +17,5 @@ struct TestResult{
     std::vector<int> S;
 };
 
-using TaskQueue = std::shared_ptr<moodycamel::BlockingConcurrentQueue<TestInstruction> >;
-using ResultQueue = std::shared_ptr<moodycamel::BlockingConcurrentQueue<TestResult> >;
+using TaskQueue = std::shared_ptr<moodycamel::ConcurrentQueue<TestInstruction> >;
+using ResultQueue = std::shared_ptr<moodycamel::ConcurrentQueue<TestResult> >;

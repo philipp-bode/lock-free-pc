@@ -14,14 +14,20 @@ class Worker {
 public:
     Worker(TaskQueue t_queue, ResultQueue r_queue, std::shared_ptr<PCAlgorithm> alg);
 
-    void execute();
+    // Task to fetch test from _work_queue and put the results to _result_queue
+    void execute_test();
 
-    bool done();
+    void execute_result();
+
+
+    // could be possible we need this later for better synchronization 
+    bool done() const;
 
 protected:
     TaskQueue _work_queue;
     ResultQueue _result_queue;
     std::shared_ptr<PCAlgorithm> _alg;
+    bool _done = false; // needs do 
 };
 
 #endif //PARALLELPC_WORKER_H
