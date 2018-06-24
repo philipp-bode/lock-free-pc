@@ -55,10 +55,10 @@ double IndepTestGauss::test(int u, int v, std::vector<int> S)
 	boost::math::normal distN;
 	double p = (2*boost::math::cdf(boost::math::complement(distN, absz)));
 
-	std::cout << "Indep(" << u << ',' << v << "|{";
-	for (auto const &s: S) {
-		std::cout << s << ',';
-	}
-	std::cout << "}) = " << p << std::endl;
+	// std::cout << "Indep(" << u << ',' << v << "|{";
+	// for (auto const &s: S) {
+	// 	std::cout << s << ',';
+	// }
+	// std::cout << "}) = " << p << std::endl;
 	return p;
 }
