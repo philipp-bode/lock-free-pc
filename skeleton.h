@@ -22,7 +22,7 @@
 
 using namespace std;
 
-class PCAlgorithm : enable_shared_from_this<PCAlgorithm> {
+class PCAlgorithm : public enable_shared_from_this<PCAlgorithm> {
 
 public:
     PCAlgorithm(int vars, double alpha, int samples, int numberThreads);

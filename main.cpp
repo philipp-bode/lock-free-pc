@@ -1,5 +1,3 @@
-#include "threadsafe_queue.cpp"
-
 #include <iostream>
 #include <vector>
 #include <thread>
@@ -52,14 +50,14 @@ int main(int argc, char* argv[])
     // kann man überlegen, ob man das nicht auch in die Klasse mit rein zieht
     auto data = read_data();
 
-    PCAlgorithm alg(data.size(), 0.1, data[0].size(), 2);
+    auto alg = make_shared<PCAlgorithm>(data.size(), 0.1, data[0].size(), 2);
 
-    alg.build_correlation_matrix(data);
+    alg->build_correlation_matrix(data);
 
 
-    alg.build_graph();
+    alg->build_graph();
 
-    alg.print_graph();
+    alg->print_graph();
 
 
     // std::vector<uint> sep1 = {5};
