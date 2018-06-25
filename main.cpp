@@ -1,5 +1,3 @@
-#include "threadsafe_queue.cpp"
-
 #include <iostream>
 #include <vector>
 #include <thread>
