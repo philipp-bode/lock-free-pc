@@ -17,7 +17,6 @@ public:
     // Task to fetch test from _work_queue and put the results to _result_queue
     void execute_test();
 
-    void execute_result();
 
 
     // could be possible we need this later for better synchronization 

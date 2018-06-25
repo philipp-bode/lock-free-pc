@@ -8,7 +8,8 @@ struct TestInstruction {
     int level;
     int X;
     int Y;
-    std::shared_ptr<std::vector<int> > adj;
+    std::shared_ptr<std::vector<int> > adjX;
+    std::shared_ptr<std::vector<int> > adjY;
 };
 
 struct TestResult{

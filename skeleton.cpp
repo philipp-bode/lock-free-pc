@@ -19,24 +19,28 @@ void PCAlgorithm::build_graph() {
         std::vector<int> nodes_to_delete(0);
         // iterate over all edges to determine if they still can be tested on this level
         for (int current_node : nodes_to_be_tested) {
-            auto adj = _graph.getNeighbours(current_node);
-            // only do the independence testing if the current_node has enough neighbours do create a separation set
-            if((int)adj.size()-1 >= level) {
+            if(_graph.getNeighbourCount(current_node)-1 >= level) {
+                auto adj = _graph.getNeighbours(current_node);
                 // j is the index in the adj-Matrix for the currently tested neighbour -> adj[j] = Y
                 for(int j = 0; j < adj.size(); j++) {
-                    shared_ptr<vector<int>> s = make_shared<vector<int> >(adj);
-                    s->erase(s->begin() + j); // Y should not be in S for X ⊥ Y | S
-                    _work_queue->enqueue(TestInstruction{level, current_node, adj[j], s});
+                    if(adj[j] < current_node || _graph.getNeighbourCount(adj[j]-1 < level)) {
+                        shared_ptr<vector<int>> sX = make_shared<vector<int> >(adj);
+                        sX->erase(sX->begin() + j); // Y should not be in S for X ⊥ Y | S
+                        shared_ptr<vector<int>> sY = make_shared<vector<int>>(_graph.getNeighboursWithoutX(adj[j], current_node));
+                        _work_queue->enqueue(TestInstruction{level, current_node, adj[j], sX, sY});
+                    }
                 }
             } else {
                 // if they have not enough neighbors for this level, they won't on the following
                 nodes_to_delete.push_back(current_node);
             }
+            // only do the independence testing if the current_node has enough neighbours do create a separation set
             cout << endl;
         }
         cout << "Queued all tests, waiting for results.." << endl;
 
         vector<shared_ptr<thread> > threads;
+        // we could think of making this a member variable and create the workers once and only the threads if they are needed
         vector<shared_ptr<Worker> > workers;
 
         rep(i,_nr_threads) {

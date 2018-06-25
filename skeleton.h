@@ -5,7 +5,6 @@
 #define rep(a, b)   for(int a = 0; a < (b); ++a)
 
 #include "graph.hpp"
-#include "threadsafe_queue.cpp"
 
 #include <iostream>
 #include <vector>
