@@ -9,10 +9,14 @@ PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
 }
 
 void PCAlgorithm::build_graph() {
+    // TODO: make the initialization in a clean way
+    _gauss_test = IndepTestGauss(_nr_samples,_correlation);
 
     int level = 1;
     std::unordered_set<int> nodes_to_be_tested;
     for (int i = 0; i < _nr_variables; ++i) nodes_to_be_tested.insert(nodes_to_be_tested.end(), i);
+    
+    cout << "Starting to fill test_queue" << endl;
 
     // we want to run as long as their are edges remaining to test on a higher level
     while(!nodes_to_be_tested.empty()) {
@@ -35,7 +39,6 @@ void PCAlgorithm::build_graph() {
                 nodes_to_delete.push_back(current_node);
             }
             // only do the independence testing if the current_node has enough neighbours do create a separation set
-            cout << endl;
         }
         cout << "Queued all tests, waiting for results.." << endl;
 
@@ -47,8 +50,6 @@ void PCAlgorithm::build_graph() {
             workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this()));
             threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
         }
-
-        // std::thread t1(&Worker::execute_test, Worker(test_queue, result_queue));
 
 
         for(auto thread : threads) {
@@ -63,8 +64,7 @@ void PCAlgorithm::build_graph() {
         TestResult result;
 
 
-        // If we really need a lot of synchronization here we could think about scheduling deticated tasks here again 
-        while(_result_queue->try_dequeue(result)) { 
+        while(_result_queue->try_dequeue(result)) {
             _graph.deleteEdge(result.X, result.Y);
             _seperation_sets.push_back(result);
         }
