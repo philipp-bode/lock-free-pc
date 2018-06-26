@@ -6,8 +6,20 @@
 
 #include "concurrentqueue/blockingconcurrentqueue.h"
 
-Worker::Worker(TaskQueue t_queue, ResultQueue r_queue, shared_ptr<PCAlgorithm> alg, std::shared_ptr<Graph> graph) :
-        _work_queue(t_queue), _result_queue(r_queue), _alg(alg), _graph(graph) {}
+Worker::Worker(
+    TaskQueue t_queue,
+    ResultQueue r_queue,
+    shared_ptr<PCAlgorithm> alg,
+    std::shared_ptr<Graph> graph,
+    std::shared_ptr<std::vector<std::vector<int>*>> sep_matrix
+) :
+        _work_queue(t_queue), _result_queue(r_queue), _alg(alg), _graph(graph), _seperation_matrix(sep_matrix) {}
+
+void Worker::update_result(int x, int y, std::vector<int> &subset) {
+    std::cout << "Deleting: " << x << '|' << y << std::endl;
+    _graph->deleteEdge(x, y);
+    // (*_seperation_matrix)[x * _alg->getNumberOfVariables() + y] = new std::vector<int>(subset);
+}
 
 void Worker::execute_test() {
     TestInstruction test;
@@ -35,8 +47,8 @@ void Worker::execute_test() {
             }
             auto p = _alg->test(test.X, test.Y, subset);
             if(p >= _alg->_alpha) {
-                // TODO: shoudln't be a queue instead use a working copy of the adjacence matrix
-                _result_queue->enqueue(TestResult{test.X, test.Y, subset});
+                update_result(test.X, test.Y, subset);
+                // _result_queue->enqueue(TestResult{test.X, test.Y, subset});
                 break;
             }
         } while (std::next_permutation(maskX.begin(), maskX.end()));
@@ -75,8 +87,8 @@ void Worker::execute_test() {
                 if (last_found > last_equal_idx) {
                     auto p = _alg->test(test.X, test.Y, subset);
                     if (p >= _alg->_alpha) {
-                        // TODO: shoudln't be a queue instead use a working copy of the adjacence matrix
-                        _result_queue->enqueue(TestResult{test.X, test.Y, subset});
+                        update_result(test.X, test.Y, subset);
+                        // _result_queue->enqueue(TestResult{test.X, test.Y, subset});
                         break;
                     }
                 }
