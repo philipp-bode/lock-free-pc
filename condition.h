@@ -1,4 +1,6 @@
-/**
+#pragma once
+
+ /**
  * Auxiliary methods for constraint-based algorithms
  *
  * @author Alain Hauser <alain.hauser@biology.unibe.ch>
@@ -30,6 +32,8 @@ public:
      */
     virtual ~IndepTest() {}
 
+    IndepTest() = default;
+
     /**
      * Virtual test function: must be implemented in all derived classes
      *
@@ -38,7 +42,7 @@ public:
      * @param	S	Conditioning set
      * @return	p-value for independence test of X_u and X_v given X_S
      */
-    virtual double test(int u, int v, std::vector<int> S) = 0;
+    virtual double test(int u, int v, std::vector<int> &S) const = 0;
 };
 
 /**
@@ -54,9 +58,12 @@ protected:
     arma::mat _correlation;
 
 public:
+
+    IndepTestGauss() = default;
+    
     IndepTestGauss(int sampleSize, arma::Mat<double>& cor) :
             _sampleSize(sampleSize),
             _correlation(cor) {}
 
-    virtual double test(int u, int v, std::vector<int> S);
+    virtual double test(int u, int v, std::vector<int> &S) const;
 };
