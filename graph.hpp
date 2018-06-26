@@ -14,6 +14,7 @@ public:
     int getNeighbourCount(int node_id) const;
 	std::vector<std::pair<int,int>> getEdgesToTest() const;
 	void print() const;
+    void print_list() const;
 
 
 
