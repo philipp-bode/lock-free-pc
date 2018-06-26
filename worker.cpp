@@ -6,13 +6,16 @@
 
 #include "concurrentqueue/blockingconcurrentqueue.h"
 
-Worker::Worker(TaskQueue t_queue, ResultQueue r_queue, shared_ptr<PCAlgorithm> alg) : _work_queue(t_queue), _result_queue(r_queue), _alg(alg) {}
+Worker::Worker(TaskQueue t_queue, ResultQueue r_queue, shared_ptr<PCAlgorithm> alg, std::shared_ptr<Graph> graph) :
+        _work_queue(t_queue), _result_queue(r_queue), _alg(alg), _graph(graph) {}
 
 void Worker::execute_test() {
     TestInstruction test;
     while(_work_queue->try_dequeue(test)) {
-
-        size_t num_elementsX = test.adjX->size();
+        
+        vector<int> adjX = _graph->getNeighboursWithoutX(test.X, test.Y);
+        
+        size_t num_elementsX = adjX.size();
         std::vector<int> maskX (num_elementsX, 0);
 
         for (int i = 0; i < test.level; i++) {
@@ -25,7 +28,7 @@ void Worker::execute_test() {
             int i = 0, j = 0;
             while (i < num_elementsX && j < test.level) {
                 if (maskX[i] == 1) {
-                    subset[j] = test.adjX->at(i);
+                    subset[j] = adjX.at(i);
                     j++;
                 }
                 i++;
@@ -37,15 +40,17 @@ void Worker::execute_test() {
                 break;
             }
         } while (std::next_permutation(maskX.begin(), maskX.end()));
+        
+        vector<int> adjY = _graph->getNeighboursWithoutX(test.X, test.Y);
 
-        if(size_t num_elements = test.adjY->size()) {
+        if(size_t num_elements = adjY.size()) {
             std::vector<int> mask(num_elements, 0);
 
             int last_equal_idx = 0;
-            for (auto node : *(test.adjX)) {
-                auto iter = find(test.adjY->begin(), test.adjY->end(), node);
-                if (iter != test.adjY->end()) {
-                    iter_swap(test.adjY->begin() + last_equal_idx, iter);
+            for (auto node : adjX) {
+                auto iter = find(adjY.begin(), adjY.end(), node);
+                if (iter != adjY.end()) {
+                    iter_swap(adjY.begin() + last_equal_idx, iter);
                     last_equal_idx++;
                 }
             }
@@ -61,7 +66,7 @@ void Worker::execute_test() {
                 int last_found;
                 while (i < num_elements && j < test.level) {
                     if (mask[i] == 1) {
-                        subset[j] = test.adjY->at(i);
+                        subset[j] = adjY.at(i);
                         last_found = j;
                         j++;
                     }
