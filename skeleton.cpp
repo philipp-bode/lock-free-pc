@@ -48,21 +48,15 @@ void PCAlgorithm::build_graph() {
         // we could think of making this a member variable and create the workers once and only the threads if they are needed
         vector<shared_ptr<Worker> > workers;
 
-//        rep(i,_nr_threads) {
-//            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this()));
-//            threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
-//        }
-//
-//
-//        for(auto thread : threads) {
-//            thread->join();
-//        }
+        rep(i,_nr_threads) {
+            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this()));
+            threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
+        }
 
-        thread t1(&Worker::execute_test, Worker(_work_queue, _result_queue, shared_from_this()));
-        cout << "Started thread" << endl;
-        t1.join();
-        threads.resize(0);
-        workers.resize(0);
+
+        for(auto thread : threads) {
+            thread->join();
+        }
         
         cout << "All tests done, working on _result_queue.." << endl;
 
