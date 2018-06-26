@@ -18,6 +18,7 @@ void PCAlgorithm::build_graph() {
     
     cout << "Starting to fill test_queue" << endl;
 
+    int size_queue = 0;
     // we want to run as long as their are edges remaining to test on a higher level
     while(!nodes_to_be_tested.empty()) {
         std::vector<int> nodes_to_delete(0);
@@ -32,6 +33,7 @@ void PCAlgorithm::build_graph() {
                         sX->erase(sX->begin() + j); // Y should not be in S for X ⊥ Y | S
                         shared_ptr<vector<int>> sY = make_shared<vector<int>>(_graph.getNeighboursWithoutX(adj[j], current_node));
                         _work_queue->enqueue(TestInstruction{level, current_node, adj[j], sX, sY});
+                        size_queue++;
                     }
                 }
             } else {
@@ -40,22 +42,25 @@ void PCAlgorithm::build_graph() {
             }
             // only do the independence testing if the current_node has enough neighbours do create a separation set
         }
-        cout << "Queued all tests, waiting for results.." << endl;
+        cout << "Queued all " << size_queue << " tests, waiting for results.." << endl;
 
         vector<shared_ptr<thread> > threads;
         // we could think of making this a member variable and create the workers once and only the threads if they are needed
         vector<shared_ptr<Worker> > workers;
 
-        rep(i,_nr_threads) {
-            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this()));
-            threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
-        }
+//        rep(i,_nr_threads) {
+//            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this()));
+//            threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
+//        }
+//
+//
+//        for(auto thread : threads) {
+//            thread->join();
+//        }
 
-
-        for(auto thread : threads) {
-            thread->join();
-        }
-
+        thread t1(&Worker::execute_test, Worker(_work_queue, _result_queue, shared_from_this()));
+        cout << "Started thread" << endl;
+        t1.join();
         threads.resize(0);
         workers.resize(0);
         
