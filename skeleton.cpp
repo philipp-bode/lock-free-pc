@@ -6,6 +6,7 @@ PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
     _work_queue = std::make_shared<moodycamel::ConcurrentQueue<TestInstruction> >();
     _result_queue = std::make_shared<moodycamel::ConcurrentQueue<TestResult> >();
+    _seperation_matrix = std::make_shared<std::vector<std::vector<int>* > >(_nr_variables*_nr_variables, nullptr);
 }
 
 void PCAlgorithm::build_graph() {
@@ -46,7 +47,7 @@ void PCAlgorithm::build_graph() {
         vector<shared_ptr<Worker> > workers;
 
         rep(i,_nr_threads) {
-            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this(),_graph));
+            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this(), _graph, _seperation_matrix));
             threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
         }
 
@@ -57,26 +58,31 @@ void PCAlgorithm::build_graph() {
         
         cout << "All tests done, working on _result_queue.." << endl;
 
-        TestResult result;
+        // TestResult result;
 
 
-        while(_result_queue->try_dequeue(result)) {
-            _graph->deleteEdge(result.X, result.Y);
-            _seperation_sets.push_back(result);
-        }
+        // while(_result_queue->try_dequeue(result)) {
+        //     _graph->deleteEdge(result.X, result.Y);
+        //     _seperation_sets.push_back(result);
+        // }
         
         cout << "No more tests in _result_queue.." << endl;
         
         for(const auto node: nodes_to_delete) {
             nodes_to_be_tested.erase(node);
         }
+        // _graph = std::make_shared<Graph>(*_working_graph);
         print_graph();
         level++;
     }
 }
 
 void PCAlgorithm::print_graph() const {
-    _graph.print_list();
+    _graph->print_list();
+}
+
+int PCAlgorithm::getNumberOfVariables() {
+    return _nr_variables;
 }
 
 void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &data) {
@@ -96,6 +102,7 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
             }
         }
     }
+    // _working_graph = std::make_shared<Graph>(*_graph);
 }
 
 
