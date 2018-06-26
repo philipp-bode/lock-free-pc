@@ -14,7 +14,7 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/dynamic_bitset.hpp>
 
-double IndepTestGauss::test(int u, int v, std::vector<int> S)
+double IndepTestGauss::test(int u, int v, std::vector<int> &S) const
 {
 	// Return NaN if any of the correlation coefficients needed for calculation is NaN
 	arma::mat C_sub;
