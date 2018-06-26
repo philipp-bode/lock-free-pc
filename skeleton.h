@@ -47,7 +47,7 @@ protected:
     int _nr_samples;
     int _nr_threads;
     arma::Mat<double>_correlation;
-    Graph _graph;
+    std::shared_ptr<Graph> _graph;
     vector<TestResult> _seperation_sets;
 
     void print_vector(const vector<int> &S) const {

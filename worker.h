@@ -12,7 +12,7 @@
 
 class Worker {
 public:
-    Worker(TaskQueue t_queue, ResultQueue r_queue, std::shared_ptr<PCAlgorithm> alg);
+    Worker(TaskQueue t_queue, ResultQueue r_queue, std::shared_ptr<PCAlgorithm> alg, std::shared_ptr<Graph> graph);
 
     // Task to fetch test from _work_queue and put the results to _result_queue
     void execute_test();
@@ -26,6 +26,7 @@ protected:
     TaskQueue _work_queue;
     ResultQueue _result_queue;
     std::shared_ptr<PCAlgorithm> _alg;
+    std::shared_ptr<Graph> _graph;
     bool _done = false; // needs do 
 };
 

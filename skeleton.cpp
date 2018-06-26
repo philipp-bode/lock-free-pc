@@ -1,7 +1,7 @@
 #include "skeleton.h"
 #include "worker.h"
 
-PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads): _graph(vars), _alpha(alpha), _nr_variables(vars), _nr_samples(samples), _nr_threads(numberThreads){
+PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads): _graph(std::make_shared<Graph>(vars)), _alpha(alpha), _nr_variables(vars), _nr_samples(samples), _nr_threads(numberThreads){
     _correlation = arma::Mat<double>(vars, vars, arma::fill::eye);
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
     _work_queue = std::make_shared<moodycamel::ConcurrentQueue<TestInstruction> >();
@@ -24,15 +24,12 @@ void PCAlgorithm::build_graph() {
         std::vector<int> nodes_to_delete(0);
         // iterate over all edges to determine if they still can be tested on this level
         for (int current_node : nodes_to_be_tested) {
-            if(_graph.getNeighbourCount(current_node)-1 >= level) {
-                auto adj = _graph.getNeighbours(current_node);
+            if(_graph->getNeighbourCount(current_node)-1 >= level) {
+                auto adj = _graph->getNeighbours(current_node);
                 // j is the index in the adj-Matrix for the currently tested neighbour -> adj[j] = Y
                 for(int j = 0; j < adj.size(); j++) {
-                    if(adj[j] < current_node || _graph.getNeighbourCount(adj[j]-1 < level)) {
-                        shared_ptr<vector<int>> sX = make_shared<vector<int> >(adj);
-                        sX->erase(sX->begin() + j); // Y should not be in S for X ⊥ Y | S
-                        shared_ptr<vector<int>> sY = make_shared<vector<int>>(_graph.getNeighboursWithoutX(adj[j], current_node));
-                        _work_queue->enqueue(TestInstruction{level, current_node, adj[j], sX, sY});
+                    if(adj[j] < current_node || _graph->getNeighbourCount(adj[j]-1 < level)) {
+                        _work_queue->enqueue(TestInstruction{level, current_node, adj[j]});
                         size_queue++;
                     }
                 }
@@ -49,7 +46,7 @@ void PCAlgorithm::build_graph() {
         vector<shared_ptr<Worker> > workers;
 
         rep(i,_nr_threads) {
-            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this()));
+            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this(),_graph));
             threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
         }
 
@@ -64,7 +61,7 @@ void PCAlgorithm::build_graph() {
 
 
         while(_result_queue->try_dequeue(result)) {
-            _graph.deleteEdge(result.X, result.Y);
+            _graph->deleteEdge(result.X, result.Y);
             _seperation_sets.push_back(result);
         }
         
@@ -79,7 +76,7 @@ void PCAlgorithm::build_graph() {
 }
 
 void PCAlgorithm::print_graph() const {
-    _graph.print();
+    _graph->print();
 }
 
 void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &data) {
@@ -95,7 +92,7 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
             );
             _correlation(i,j) = _correlation(j,i) = pearson;
             if(pearson < _alpha) {
-                _graph.deleteEdge(i,j);
+                _graph->deleteEdge(i,j);
             }
         }
     }
