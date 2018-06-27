@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
     alg->build_graph();
 
-//    alg->print_graph();
+    alg->print_graph();
 
 
     // std::vector<uint> sep1 = {5};
