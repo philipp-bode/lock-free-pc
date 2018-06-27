@@ -1,6 +1,12 @@
 #include "skeleton.h"
 #include "worker.h"
 
+struct pair_hash {
+    inline std::size_t operator()(const std::pair<int,int> & v) const {
+        return v.first*31+v.second;
+    }
+};
+
 PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads): _graph(std::make_shared<Graph>(vars)), _alpha(alpha), _nr_variables(vars), _nr_samples(samples), _nr_threads(numberThreads){
     _correlation = arma::Mat<double>(vars, vars, arma::fill::eye);
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
@@ -19,10 +25,11 @@ void PCAlgorithm::build_graph() {
     
     cout << "Starting to fill test_queue" << endl;
 
-    int size_queue = 0;
     // we want to run as long as their are edges remaining to test on a higher level
     while(!nodes_to_be_tested.empty()) {
+        int queue_size = 0;
         std::vector<int> nodes_to_delete(0);
+        std::unordered_set<std::pair<int, int>, pair_hash> next_tests;
         // iterate over all edges to determine if they still can be tested on this level
         for (int current_node : nodes_to_be_tested) {
             if(_graph->getNeighbourCount(current_node)-1 >= level) {
@@ -30,8 +37,11 @@ void PCAlgorithm::build_graph() {
                 // j is the index in the adj-Matrix for the currently tested neighbour -> adj[j] = Y
                 for(int j = 0; j < adj.size(); j++) {
                     if(adj[j] < current_node || _graph->getNeighbourCount(adj[j]-1 < level)) {
-                        _work_queue->enqueue(TestInstruction{level, current_node, adj[j]});
-                        size_queue++;
+                        if (current_node < adj[j]) {
+                            next_tests.emplace(current_node, adj[j]);
+                        } else {
+                            next_tests.emplace(adj[j], current_node);
+                        }
                     }
                 }
             } else {
@@ -40,38 +50,39 @@ void PCAlgorithm::build_graph() {
             }
             // only do the independence testing if the current_node has enough neighbours do create a separation set
         }
-        cout << "Queued all " << size_queue << " tests, waiting for results.." << endl;
-
-        vector<shared_ptr<thread> > threads;
-        // we could think of making this a member variable and create the workers once and only the threads if they are needed
-        vector<shared_ptr<Worker> > workers;
-
-        rep(i,_nr_threads) {
-            workers.push_back(make_shared<Worker>(_work_queue, _result_queue, shared_from_this(), _graph, _seperation_matrix));
-            threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
+        for(auto const &t : next_tests){
+            queue_size++;
+            _work_queue->enqueue(TestInstruction{level, t.first, t.second});
         }
+        if(queue_size) {
+            cout << "Queued all " << queue_size << " tests, waiting for results.." << endl;
 
+            vector<shared_ptr<thread> > threads;
+            // we could think of making this a member variable and create the workers once and only the threads if they are needed
+            vector<shared_ptr<Worker> > workers;
 
-        for(auto thread : threads) {
-            thread->join();
+            rep(i,_nr_threads) {
+                workers.push_back(make_shared<Worker>(
+                    _work_queue,
+                    shared_from_this(),
+                    _graph,
+                    _working_graph,
+                    _seperation_matrix
+                ));
+                threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
+            }
+
+            for(auto thread : threads) {
+                thread->join();
+            }
         }
         
-        cout << "All tests done, working on _result_queue.." << endl;
-
-        // TestResult result;
-
-
-        // while(_result_queue->try_dequeue(result)) {
-        //     _graph->deleteEdge(result.X, result.Y);
-        //     _seperation_sets.push_back(result);
-        // }
-        
-        cout << "No more tests in _result_queue.." << endl;
+        cout << "All tests done." << endl;
         
         for(const auto node: nodes_to_delete) {
             nodes_to_be_tested.erase(node);
         }
-        // _graph = std::make_shared<Graph>(*_working_graph);
+        _graph = std::make_shared<Graph>(*_working_graph);
         print_graph();
         level++;
     }
@@ -102,7 +113,7 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
             }
         }
     }
-    // _working_graph = std::make_shared<Graph>(*_graph);
+    _working_graph = std::make_shared<Graph>(*_graph);
 }
 
 
