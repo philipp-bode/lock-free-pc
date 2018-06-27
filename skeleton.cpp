@@ -76,7 +76,7 @@ void PCAlgorithm::build_graph() {
 }
 
 void PCAlgorithm::print_graph() const {
-    _graph.print_list();
+    _graph->print_list();
 }
 
 void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &data) {
