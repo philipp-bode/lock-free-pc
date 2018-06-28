@@ -12,21 +12,29 @@
 
 class Worker {
 public:
-    Worker(TaskQueue t_queue, ResultQueue r_queue, std::shared_ptr<PCAlgorithm> alg, std::shared_ptr<Graph> graph);
+    Worker(
+        TaskQueue t_queue,
+        std::shared_ptr<PCAlgorithm> alg,
+        std::shared_ptr<Graph> graph,
+        std::shared_ptr<Graph> working_graph,
+        std::shared_ptr<std::vector<std::vector<int>*>> sep_matrix
+    );
 
     // Task to fetch test from _work_queue and put the results to _result_queue
     void execute_test();
 
-
+    // Write independence test results to the graph and seperation set store 
+    void update_result(int x, int y, std::vector<int> &subset);
 
     // could be possible we need this later for better synchronization 
     bool done() const;
 
 protected:
     TaskQueue _work_queue;
-    ResultQueue _result_queue;
     std::shared_ptr<PCAlgorithm> _alg;
     std::shared_ptr<Graph> _graph;
+    std::shared_ptr<Graph> _working_graph;
+    std::shared_ptr<std::vector<std::vector<int>*>> _seperation_matrix;
     bool _done = false; // needs do 
 };
 
