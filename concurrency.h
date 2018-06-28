@@ -5,7 +5,6 @@
 #include "concurrentqueue/concurrentqueue.h"
 
 struct TestInstruction {
-    int level;
     int X;
     int Y;
 };

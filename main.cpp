@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     // kann man überlegen, ob man das nicht auch in die Klasse mit rein zieht
     auto data = read_data(filename);
 
-    auto alg = make_shared<PCAlgorithm>(data.size(), 0.1, data[0].size(), 4);
+    auto alg = make_shared<PCAlgorithm>(data.size(), 0.01, data[0].size(), 4);
 
     alg->build_correlation_matrix(data);
 
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     // cout << indepTest.test(4,5, sep2) << endl;
     // cout << indepTest.test(0,1, sep3) << endl;
 
-    // alg._work_queue.enqueue(TestInstruction(1,56,57, vector<int>{1,2,3,4}));
+    // alg._work_queue.enqueue(TestInstruction(56,57, vector<int>{1,2,3,4}));
     // TestInstruction test;
     // cout << "Aprrox. Size: " << alg._work_queue.size_approx() << endl;
     // bool found = alg._work_queue.try_dequeue(test);

@@ -11,11 +11,12 @@ PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
 
 void PCAlgorithm::build_graph() {
     // TODO: make the initialization in a clean way
-    _gauss_test = IndepTestGauss(_nr_samples,_correlation);
 
+    long total_tests = 0;
     int level = 1;
     std::unordered_set<int> nodes_to_be_tested;
     for (int i = 0; i < _nr_variables; ++i) nodes_to_be_tested.insert(nodes_to_be_tested.end(), i);
+    std::vector<int> stats(_nr_threads, 0);
     
     cout << "Starting to fill test_queue" << endl;
 
@@ -29,7 +30,7 @@ void PCAlgorithm::build_graph() {
                 auto adj = _graph->getNeighbours(x);
                 for (int &y : adj) {
                     if(y < x || _graph->getNeighbourCount(y)-1 < level) {
-                        _work_queue->enqueue(TestInstruction{level, x, y});
+                        _work_queue->enqueue(TestInstruction{x, y});
                         queue_size++;
                     }
                 }
@@ -40,7 +41,7 @@ void PCAlgorithm::build_graph() {
             // only do the independence testing if the current_node has enough neighbours do create a separation set
         }
         if(queue_size) {
-            cout << "Queued all " << queue_size << " tests, waiting for results.." << endl;
+            cout << "Queued all " << queue_size << " pairs, waiting for results.." << endl;
 
             vector<shared_ptr<thread> > threads;
             // we could think of making this a member variable and create the workers once and only the threads if they are needed
@@ -50,9 +51,11 @@ void PCAlgorithm::build_graph() {
                 workers.push_back(make_shared<Worker>(
                     _work_queue,
                     shared_from_this(),
+                    level,
                     _graph,
                     _working_graph,
-                    _seperation_matrix
+                    _seperation_matrix,
+                    &stats[i]
                 ));
                 threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
             }
@@ -60,17 +63,26 @@ void PCAlgorithm::build_graph() {
             for(const auto &thread : threads) {
                 thread->join();
             }
+            for(int i = 0; i < _nr_threads; i++) {
+                std::cout << "Thread " << i << ": " << stats[i] << " tests." << std::endl;
+                total_tests += stats[i];
+                stats[i] = 0;
+            }
+            cout << "All tests done for level " << level << '.' << endl;
+        } else {
+            cout << "No tests left for level " << level << '.' << endl;
         }
         
-        cout << "All tests done." << endl;
         
         for(const auto node: nodes_to_delete) {
             nodes_to_be_tested.erase(node);
         }
         _graph = std::make_shared<Graph>(*_working_graph);
-        print_graph();
+        // print_graph();
         level++;
     }
+
+    cout << "Total seperation sets tested: " << total_tests << std::endl;
 }
 
 void PCAlgorithm::print_graph() const {
@@ -82,6 +94,7 @@ int PCAlgorithm::getNumberOfVariables() {
 }
 
 void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &data) {
+    int kicked_out = 0;
     int n = data[0].size();
     rep(i, _nr_variables) {
         rep(j, i) {
@@ -94,11 +107,14 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
             );
             _correlation(i,j) = _correlation(j,i) = pearson;
             if(pearson < _alpha) {
+                kicked_out += 2;
                 _graph->deleteEdge(i,j);
             }
         }
     }
+    cout << "Kicked out: " << kicked_out << std::endl;
     _working_graph = std::make_shared<Graph>(*_graph);
+    _gauss_test = IndepTestGauss(_nr_samples,_correlation);
 }
 
 

@@ -19,10 +19,10 @@ Graph::Graph(Graph &g) {
 void Graph::deleteEdge(int node_x, int node_y) {
     _adjacencies.at(node_x, node_y) = 0;
     _adjacencies.at(node_y, node_x) = 0;
-    // _update_lock.lock();
+    _update_lock.lock();
     _neighbour_count[node_x] -= 1;
     _neighbour_count[node_y] -= 1;
-    // _update_lock.unlock();
+    _update_lock.unlock();
 }
 
 std::vector<int> Graph::getNeighbours(int node_id) const {
