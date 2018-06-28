@@ -3,7 +3,7 @@
 
 struct pair_hash {
     inline std::size_t operator()(const std::pair<int,int> & v) const {
-        return v.first*31+v.second;
+        return static_cast<size_t>(v.first * 31 + v.second);
     }
 };
 
@@ -34,13 +34,12 @@ void PCAlgorithm::build_graph() {
         for (int current_node : nodes_to_be_tested) {
             if(_graph->getNeighbourCount(current_node)-1 >= level) {
                 auto adj = _graph->getNeighbours(current_node);
-                // j is the index in the adj-Matrix for the currently tested neighbour -> adj[j] = Y
-                for(int j = 0; j < adj.size(); j++) {
-                    if(adj[j] < current_node || _graph->getNeighbourCount(adj[j]-1 < level)) {
-                        if (current_node < adj[j]) {
-                            next_tests.emplace(current_node, adj[j]);
+                for (int &y : adj) {
+                    if(y < current_node || _graph->getNeighbourCount(y -1 < level)) {
+                        if (current_node < y) {
+                            next_tests.emplace(current_node, y);
                         } else {
-                            next_tests.emplace(adj[j], current_node);
+                            next_tests.emplace(y, current_node);
                         }
                     }
                 }
@@ -72,7 +71,7 @@ void PCAlgorithm::build_graph() {
                 threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
             }
 
-            for(auto thread : threads) {
+            for(const auto &thread : threads) {
                 thread->join();
             }
         }
