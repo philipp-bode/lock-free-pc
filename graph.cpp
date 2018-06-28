@@ -50,6 +50,10 @@ std::vector<std::pair<int,int> > Graph::getEdgesToTest() const {
     return result;
 }
 
+void Graph::print_mat() const {
+    _adjacencies.print(std::cout);
+}
+
 void Graph::print_list() const {
     for(int i = 0; i < _num_nodes; i++) {
         std::vector<int> adj = getNeighbours(i);

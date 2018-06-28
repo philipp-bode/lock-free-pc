@@ -1,12 +1,6 @@
 #include "skeleton.h"
 #include "worker.h"
 
-struct pair_hash {
-    inline std::size_t operator()(const std::pair<int,int> & v) const {
-        return static_cast<size_t>(v.first * 31 + v.second);
-    }
-};
-
 PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads): _graph(std::make_shared<Graph>(vars)), _alpha(alpha), _nr_variables(vars), _nr_samples(samples), _nr_threads(numberThreads){
     _correlation = arma::Mat<double>(vars, vars, arma::fill::eye);
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
@@ -29,29 +23,21 @@ void PCAlgorithm::build_graph() {
     while(!nodes_to_be_tested.empty()) {
         int queue_size = 0;
         std::vector<int> nodes_to_delete(0);
-        std::unordered_set<std::pair<int, int>, pair_hash> next_tests;
         // iterate over all edges to determine if they still can be tested on this level
-        for (int current_node : nodes_to_be_tested) {
-            if(_graph->getNeighbourCount(current_node)-1 >= level) {
-                auto adj = _graph->getNeighbours(current_node);
+        for (int x : nodes_to_be_tested) {
+            if(_graph->getNeighbourCount(x)-1 >= level) {
+                auto adj = _graph->getNeighbours(x);
                 for (int &y : adj) {
-                    if(y < current_node || _graph->getNeighbourCount(y -1 < level)) {
-                        if (current_node < y) {
-                            next_tests.emplace(current_node, y);
-                        } else {
-                            next_tests.emplace(y, current_node);
-                        }
+                    if(y < x || _graph->getNeighbourCount(y)-1 < level) {
+                        _work_queue->enqueue(TestInstruction{level, x, y});
+                        queue_size++;
                     }
                 }
             } else {
                 // if they have not enough neighbors for this level, they won't on the following
-                nodes_to_delete.push_back(current_node);
+                nodes_to_delete.push_back(x);
             }
             // only do the independence testing if the current_node has enough neighbours do create a separation set
-        }
-        for(auto const &t : next_tests){
-            queue_size++;
-            _work_queue->enqueue(TestInstruction{level, t.first, t.second});
         }
         if(queue_size) {
             cout << "Queued all " << queue_size << " tests, waiting for results.." << endl;
