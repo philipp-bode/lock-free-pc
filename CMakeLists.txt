@@ -3,6 +3,7 @@ project(ParallelPC)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
+set(CMAKE_BUILD_TYPE Release)
 
 set(SOURCE_FILES main.cpp condition.h condition.cpp graph.hpp graph.cpp worker.h worker.cpp skeleton.h skeleton.cpp)
 

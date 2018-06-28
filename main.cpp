@@ -19,9 +19,12 @@
 
 
 
-std::vector<std::vector<double>> read_data() {
-    // std::freopen("Scerevisiae.csv", "r", stdin);
-    std::freopen("../cooling_house.data", "r", stdin);
+vector<vector<double>> read_data(const char *filename) {
+    auto file = std::freopen(filename, "r", stdin);
+    if (file == nullptr) {
+        std::cout << "Could not find file '" << filename << '\'' << std::endl;
+        exit(1);
+    }
     int variables, observations;
     double next_val;
 
@@ -41,14 +44,21 @@ std::vector<std::vector<double>> read_data() {
 }
 
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
+    const char *filename;
+    if (argc == 2) {
+       filename = argv[1];
+    } else {
+        cout << "Usage: ./ParallelPC.out Filename\n";
+        return 1;
+    }
+
     std::ios::sync_with_stdio(false);
     cin.tie(nullptr);
     cout.precision(10);
 
     // kann man überlegen, ob man das nicht auch in die Klasse mit rein zieht
-    auto data = read_data();
+    auto data = read_data(filename);
 
     auto alg = make_shared<PCAlgorithm>(data.size(), 0.1, data[0].size(), 4);
 
@@ -57,7 +67,7 @@ int main(int argc, char* argv[])
 
     alg->build_graph();
 
-//    alg->print_graph();
+    alg->print_graph();
 
 
     // std::vector<uint> sep1 = {5};
