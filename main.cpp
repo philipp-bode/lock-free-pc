@@ -20,7 +20,11 @@
 
 
 vector<vector<double>> read_data(const char *filename) {
-    std::freopen(filename, "r", stdin);
+    auto file = std::freopen(filename, "r", stdin);
+    if (file == nullptr) {
+        std::cout << "Could not find file '" << filename << '\'' << std::endl;
+        exit(1);
+    }
     int variables, observations;
     double next_val;
 

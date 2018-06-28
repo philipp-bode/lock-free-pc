@@ -20,6 +20,7 @@ public:
 
     std::vector<std::pair<int,int>> getEdgesToTest() const;
     void print_list() const;
+    void print_mat() const;
 
 
 
