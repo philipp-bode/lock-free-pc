@@ -34,7 +34,7 @@ void Worker::test_single_conditional() {
 
     while(_work_queue->try_dequeue(test)) {
 
-        vector<int> adjX = _graph->getNeighboursWithoutX(test.X, test.Y);
+        vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
         vector<int> sep(1);
         bool separated = false;
 
@@ -50,7 +50,7 @@ void Worker::test_single_conditional() {
         }
 
         if (!separated) {
-            vector<int> adjY = _graph->getNeighboursWithoutX(test.Y, test.X);
+            vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
             for(auto const neighbour : adjY) {
                 sep[0] = neighbour;
                 auto p = _alg->test(test.X, test.Y, sep);
@@ -69,7 +69,7 @@ void Worker::test_higher_order() {
 
     while(_work_queue->try_dequeue(test)) {
         
-        vector<int> adjX = _graph->getNeighboursWithoutX(test.X, test.Y);
+        vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
         
         if(size_t num_elementsX = adjX.size()) {
             std::vector<int> maskX (num_elementsX, 0);
@@ -98,7 +98,7 @@ void Worker::test_higher_order() {
             } while (std::next_permutation(maskX.begin(), maskX.end()));
         }
         
-        vector<int> adjY = _graph->getNeighboursWithoutX(test.Y, test.X);
+        vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
 
         if(size_t num_elements = adjY.size()) {
             std::vector<int> mask(num_elements, 0);

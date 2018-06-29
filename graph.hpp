@@ -11,7 +11,7 @@ public:
 
     void deleteEdge(int node_x, int node_y);
     std::vector<int> getNeighbours(int node_id) const;
-    std::vector<int> getNeighboursWithoutX(int node_id, int x_id) const;
+    std::vector<int> getNeighboursWithout(int node_id, int skip) const;
     int getNeighbourCount(int node_id) const;
     arma::Mat<uint8_t> getAdjacencies();
     std::vector<int> getNeighbourVector();

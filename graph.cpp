@@ -89,12 +89,12 @@ std::vector<int> Graph::getNeighbourVector() {
     return _neighbour_count;
 }
 
-std::vector<int> Graph::getNeighboursWithoutX(int node_id, int x_id) const {
+std::vector<int> Graph::getNeighboursWithout(int node_id, int skip) const {
     std::vector<int> result;
     result.reserve(_num_nodes);
     for (int i = 0; i < _num_nodes; ++i)
     {
-        if(_adjacencies.at(i,node_id) && i != node_id && i != x_id) {
+        if(_adjacencies.at(i,node_id) && i != node_id && i != skip) {
             result.push_back(i);
         }
     }
