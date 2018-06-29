@@ -12,9 +12,6 @@
 
 
 #define rep(a, b)   for(int a = 0; a < (b); ++a)
-#define debug(x)    clog << #x << " = " << x << endl;
-#define all(a)      (a).begin(),(a).end()
-// #define endl '\n'
 
 
 
@@ -68,24 +65,6 @@ int main(int argc, char* argv[]) {
     alg->build_graph();
 
     alg->print_graph();
-
-
-    // std::vector<uint> sep1 = {5};
-    // std::vector<uint> sep2 = {3};
-    // std::vector<uint> sep3 = {5};
-
-    // IndepTestGauss indepTest(6,alg._correlation);
-    // cout << indepTest.test(3,4, {5}) << endl;
-    // cout << indepTest.test(4,5, sep2) << endl;
-    // cout << indepTest.test(0,1, sep3) << endl;
-
-    // alg._work_queue.enqueue(TestInstruction(56,57, vector<int>{1,2,3,4}));
-    // TestInstruction test;
-    // cout << "Aprrox. Size: " << alg._work_queue.size_approx() << endl;
-    // bool found = alg._work_queue.try_dequeue(test);
-    // cout << "Found: " << found << endl;
-    // cout << test.X << '|' << test.Y << endl;
-    // cout << "Aprrox. Size: " << alg._work_queue.size_approx() << endl;
 
     cout.flush();
     return 0;

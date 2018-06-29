@@ -10,7 +10,6 @@ PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
 }
 
 void PCAlgorithm::build_graph() {
-    // TODO: make the initialization in a clean way
 
     long total_tests = 0;
     int level = 1;
@@ -71,6 +70,8 @@ void PCAlgorithm::build_graph() {
             cout << "All tests done for level " << level << '.' << endl;
         } else {
             cout << "No tests left for level " << level << '.' << endl;
+            _graph = std::make_shared<Graph>(*_working_graph);
+            break;
         }
         
         
@@ -78,11 +79,10 @@ void PCAlgorithm::build_graph() {
             nodes_to_be_tested.erase(node);
         }
         _graph = std::make_shared<Graph>(*_working_graph);
-        // print_graph();
         level++;
     }
 
-    cout << "Total separation sets tested: " << total_tests << std::endl;
+    cout << "Total independence tests made: " << total_tests << std::endl;
 }
 
 void PCAlgorithm::print_graph() const {
@@ -94,7 +94,7 @@ int PCAlgorithm::getNumberOfVariables() {
 }
 
 void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &data) {
-    int kicked_out = 0;
+    int deleted_edges = 0;
     int n = data[0].size();
     rep(i, _nr_variables) {
         rep(j, i) {
@@ -107,12 +107,12 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
             );
             _correlation(i,j) = _correlation(j,i) = pearson;
             if(pearson < _alpha) {
-                kicked_out += 2;
+                deleted_edges += 2;
                 _graph->deleteEdge(i,j);
             }
         }
     }
-    cout << "Kicked out: " << kicked_out << std::endl;
+    cout << "Kicked out: " << deleted_edges << std::endl;
     _working_graph = std::make_shared<Graph>(*_graph);
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
 }
