@@ -51,6 +51,8 @@ void Worker::test_single_conditional() {
 
         if (!separated) {
             vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
+            for(auto const neighbour : adjY) {
+                sep[0] = neighbour;
                 auto p = _alg->test(test.X, test.Y, sep);
                 (*_test_count)++;
                 if(p >= _alg->_alpha) {
