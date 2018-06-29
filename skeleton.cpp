@@ -7,7 +7,6 @@ PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
     _work_queue = std::make_shared<moodycamel::ConcurrentQueue<TestInstruction> >();
     _result_queue = std::make_shared<moodycamel::ConcurrentQueue<TestResult> >();
     _separation_matrix = std::make_shared<std::vector<std::shared_ptr<std::vector<int>>>>(_nr_variables*_nr_variables, nullptr);
-    _statistics = std::vector<std::vector<std::shared_ptr<Statistics>>>();
 }
 
 void PCAlgorithm::build_graph() {
@@ -17,8 +16,11 @@ void PCAlgorithm::build_graph() {
     std::unordered_set<int> nodes_to_be_tested;
     for (int i = 0; i < _nr_variables; ++i) nodes_to_be_tested.insert(nodes_to_be_tested.end(), i);
     std::vector<int> stats(_nr_threads, 0);
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_queue, end_queue, start_worker, end_worker;
     
     cout << "Starting to fill test_queue" << endl;
+    set_time(start_queue)
 
     // we want to run as long as their are edges remaining to test on a higher level
     while(!nodes_to_be_tested.empty()) {
@@ -40,15 +42,20 @@ void PCAlgorithm::build_graph() {
             }
             // only do the independence testing if the current_node has enough neighbours do create a separation set
         }
+        set_time(end_queue)
+        double duration_queue = 0.0;
+        add_time_to(duration_queue, start_queue, end_queue)
         if(queue_size) {
             cout << "Queued all " << queue_size << " pairs, waiting for results.." << endl;
 
             vector<shared_ptr<thread> > threads;
             // we could think of making this a member variable and create the workers once and only the threads if they are needed
             vector<shared_ptr<Worker> > workers;
-            vector<shared_ptr<Statistics> > stats(_nr_threads, std::make_shared<Statistics>());
+            vector<shared_ptr<Statistics> > stats(_nr_threads);
 
+            set_time(start_worker)
             rep(i,_nr_threads) {
+                stats[i] = std::make_shared<Statistics>();
                 workers.push_back(make_shared<Worker>(
                     _work_queue,
                     shared_from_this(),
@@ -64,15 +71,22 @@ void PCAlgorithm::build_graph() {
             for(const auto &thread : threads) {
                 thread->join();
             }
+            set_time(end_worker)
+            double duration_worker = 0.0;
+            add_time_to(duration_worker, start_worker, end_worker)
 #ifdef WITH_STATS
+            cout << "Duration queue fuelling: " << duration_queue << " s" << endl;
+            cout << "Duration queue processing: " << duration_worker << " s" << endl;
             for(int i = 0; i < _nr_threads; i++) {
                 std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "
                           << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl;
+                std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus/stats[i]->test_count*1000 << " ms per test on average and "
+                          << stats[i]->sum_time_queue_element/stats[i]->dequed_elements*1000 << " ms per queue element on average" << std::endl;
                 total_tests += stats[i]->test_count;
             }
-            _statistics.push_back(stats);
 #endif
             cout << "All tests done for level " << level << '.' << endl;
+            stats.resize(0);
         } else {
             cout << "No tests left for level " << level << '.' << endl;
             _graph = std::make_shared<Graph>(*_working_graph);

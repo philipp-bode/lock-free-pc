@@ -27,8 +27,10 @@ Worker::Worker(
 
 void Worker::test_single_conditional() {
     TestInstruction test;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_gaus,end_gaus;
 
     while(_work_queue->try_dequeue(test)) {
+        set_time(start_loop)
         increment_stat(_statistics->dequed_elements)
         vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
         vector<int> sep(1);
@@ -36,7 +38,10 @@ void Worker::test_single_conditional() {
 
         for(auto const neighbour : adjX) {
             sep[0] = neighbour;
+            set_time(start_gaus)
             auto p = _alg->test(test.X, test.Y, sep);
+            set_time(end_gaus)
+            add_time_to(_statistics->sum_time_gaus, start_gaus, end_gaus)
             increment_stat(_statistics->test_count)
             if(p >= _alg->_alpha) {
                 update_result(test.X, test.Y, sep);
@@ -57,13 +62,18 @@ void Worker::test_single_conditional() {
                 }
             }
         }
+        set_time(end_loop)
+        add_time_to(_statistics->sum_time_queue_element, start_loop, end_loop)
     }
 }
 
 void Worker::test_higher_order() {
     TestInstruction test;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_gaus,end_gaus;
 
     while(_work_queue->try_dequeue(test)) {
+        set_time(start_loop)
+        increment_stat(_statistics->dequed_elements)
         
         vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
         
@@ -85,7 +95,10 @@ void Worker::test_higher_order() {
                     }
                     i++;
                 }
+                set_time(start_gaus)
                 auto p = _alg->test(test.X, test.Y, subset);
+                set_time(end_gaus)
+                add_time_to(_statistics->sum_time_gaus, start_gaus, end_gaus)
                 increment_stat(_statistics->test_count)
                 if(p >= _alg->_alpha) {
                     update_result(test.X, test.Y, subset);
@@ -126,7 +139,10 @@ void Worker::test_higher_order() {
                     i++;
                 }
                 if (last_found > last_equal_idx) {
+                    set_time(start_gaus)
                     auto p = _alg->test(test.X, test.Y, subset);
+                    set_time(end_gaus)
+                    add_time_to(_statistics->sum_time_gaus, start_gaus, end_gaus)
                     increment_stat(_statistics->test_count)
                     if (p >= _alg->_alpha) {
                         update_result(test.X, test.Y, subset);
@@ -136,6 +152,8 @@ void Worker::test_higher_order() {
             } while (std::next_permutation(mask.begin(), mask.end()));
         }
     }
+    set_time(end_loop)
+    add_time_to(_statistics->sum_time_queue_element, start_loop, end_loop)
 
 }
 

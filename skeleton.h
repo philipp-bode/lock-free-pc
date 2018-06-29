@@ -52,7 +52,6 @@ protected:
     shared_ptr<Graph> _graph;
     shared_ptr<Graph> _working_graph;
     vector<TestResult> _separation_sets;
-    vector<vector<shared_ptr<Statistics>>> _statistics;
     shared_ptr<vector<shared_ptr<vector<int>>>> _separation_matrix;
 
     void print_vector(const vector<int> &S) const {
