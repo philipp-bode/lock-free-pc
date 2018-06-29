@@ -20,13 +20,13 @@ Worker::Worker(
     _level(level),
     _graph(graph),
     _working_graph(working_graph),
-    _seperation_matrix(sep_matrix),
+    _separation_matrix(sep_matrix),
     _test_count(test_count)
 {}
 
 void Worker::update_result(int x, int y, const std::vector<int> &subset) {
     _working_graph->deleteEdge(x, y);
-    (*_seperation_matrix)[x * _alg->getNumberOfVariables() + y] = new std::vector<int>(subset);
+    (*_separation_matrix)[x * _alg->getNumberOfVariables() + y] = new std::vector<int>(subset);
 }
 
 void Worker::test_single_conditional() {
@@ -36,9 +36,9 @@ void Worker::test_single_conditional() {
 
         vector<int> adjX = _graph->getNeighboursWithoutX(test.X, test.Y);
         vector<int> sep(1);
-        bool seperated = false;
+        bool separated = false;
 
-        for (int i = adjX.size()-1; i >= 0 && !seperated; i--) {
+        for (int i = adjX.size()-1; i >= 0 && !separated; i--) {
         // for(auto const neighbour : adjX) {
             // sep[0] = neighbour;
             sep[0] = adjX[i];
@@ -46,12 +46,12 @@ void Worker::test_single_conditional() {
             (*_test_count)++;
             if(p >= _alg->_alpha) {
                 update_result(test.X, test.Y, sep);
-                seperated = true;
+                separated = true;
                 break;
             }
         }
 
-        if (!seperated) {
+        if (!separated) {
             vector<int> adjY = _graph->getNeighboursWithoutX(test.Y, test.X);
             for (int i = adjY.size()-1; i >= 0; i--) {
             // for(auto const neighbour : adjY) {
@@ -73,7 +73,6 @@ void Worker::test_higher_order() {
 
     while(_work_queue->try_dequeue(test)) {
         
-        bool seperated = false;
         vector<int> adjX = _graph->getNeighboursWithoutX(test.X, test.Y);
         
         if(size_t num_elementsX = adjX.size()) {
@@ -98,16 +97,15 @@ void Worker::test_higher_order() {
                 (*_test_count)++;
                 if(p >= _alg->_alpha) {
                     update_result(test.X, test.Y, subset);
-                    seperated = true;
                     break;
                 }
-            } while (!seperated && std::next_permutation(maskX.begin(), maskX.end()));
+            } while (std::next_permutation(maskX.begin(), maskX.end()));
         }
         
         vector<int> adjY = _graph->getNeighboursWithoutX(test.Y, test.X);
 
         size_t num_elements = adjY.size();
-        if(!seperated && num_elements) {
+        if(num_elements) {
             std::vector<int> mask(num_elements, 0);
 
             int last_equal_idx = 0;
@@ -141,11 +139,10 @@ void Worker::test_higher_order() {
                     (*_test_count)++;
                     if (p >= _alg->_alpha) {
                         update_result(test.X, test.Y, subset);
-                        seperated = true;
                         break;
                     }
                 }
-            } while (!seperated && std::next_permutation(mask.begin(), mask.end()));
+            } while (std::next_permutation(mask.begin(), mask.end()));
         }
     }
 

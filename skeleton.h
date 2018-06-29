@@ -51,8 +51,8 @@ protected:
     arma::Mat<double>_correlation;
     std::shared_ptr<Graph> _graph;
     std::shared_ptr<Graph> _working_graph;
-    vector<TestResult> _seperation_sets;
-    std::shared_ptr<std::vector<std::vector<int>*>> _seperation_matrix;
+    vector<TestResult> _separation_sets;
+    std::shared_ptr<std::vector<std::vector<int>*>> _separation_matrix;
 
     void print_vector(const vector<int> &S) const {
         for(auto s : S)

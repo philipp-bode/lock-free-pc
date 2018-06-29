@@ -6,7 +6,7 @@ PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
     _work_queue = std::make_shared<moodycamel::ConcurrentQueue<TestInstruction> >();
     _result_queue = std::make_shared<moodycamel::ConcurrentQueue<TestResult> >();
-    _seperation_matrix = std::make_shared<std::vector<std::vector<int>* > >(_nr_variables*_nr_variables, nullptr);
+    _separation_matrix = std::make_shared<std::vector<std::vector<int>* > >(_nr_variables*_nr_variables, nullptr);
 }
 
 void PCAlgorithm::build_graph() {
@@ -54,7 +54,7 @@ void PCAlgorithm::build_graph() {
                     level,
                     _graph,
                     _working_graph,
-                    _seperation_matrix,
+                    _separation_matrix,
                     &stats[i]
                 ));
                 threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
@@ -82,7 +82,7 @@ void PCAlgorithm::build_graph() {
         level++;
     }
 
-    cout << "Total seperation sets tested: " << total_tests << std::endl;
+    cout << "Total separation sets tested: " << total_tests << std::endl;
 }
 
 void PCAlgorithm::print_graph() const {

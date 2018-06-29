@@ -25,7 +25,7 @@ public:
     // Task to fetch test from _work_queue and put the results to _result_queue
     void execute_test();
 
-    // Write independence test results to the graph and seperation set store 
+    // Write independence test results to the graph and separation set store 
     void update_result(int x, int y, const std::vector<int> &subset);
     void test_single_conditional();
     void test_higher_order();
@@ -39,7 +39,7 @@ protected:
     int _level;
     std::shared_ptr<Graph> _graph;
     std::shared_ptr<Graph> _working_graph;
-    std::shared_ptr<std::vector<std::vector<int>*>> _seperation_matrix;
+    std::shared_ptr<std::vector<std::vector<int>*>> _separation_matrix;
     int *_test_count;
     bool _done = false; // needs do 
 };
