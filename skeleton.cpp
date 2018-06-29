@@ -6,7 +6,8 @@ PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
     _work_queue = std::make_shared<moodycamel::ConcurrentQueue<TestInstruction> >();
     _result_queue = std::make_shared<moodycamel::ConcurrentQueue<TestResult> >();
-    _separation_matrix = std::make_shared<std::vector<std::vector<int>* > >(_nr_variables*_nr_variables, nullptr);
+    _separation_matrix = std::make_shared<std::vector<std::shared_ptr<std::vector<int>>>>(_nr_variables*_nr_variables, nullptr);
+    _statistics = std::vector<std::vector<std::shared_ptr<Statistics>>>();
 }
 
 void PCAlgorithm::build_graph() {
@@ -45,6 +46,7 @@ void PCAlgorithm::build_graph() {
             vector<shared_ptr<thread> > threads;
             // we could think of making this a member variable and create the workers once and only the threads if they are needed
             vector<shared_ptr<Worker> > workers;
+            vector<shared_ptr<Statistics> > stats(_nr_threads, std::make_shared<Statistics>());
 
             rep(i,_nr_threads) {
                 workers.push_back(make_shared<Worker>(
@@ -54,7 +56,7 @@ void PCAlgorithm::build_graph() {
                     _graph,
                     _working_graph,
                     _separation_matrix,
-                    &stats[i]
+                    stats[i]
                 ));
                 threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
             }
@@ -62,11 +64,14 @@ void PCAlgorithm::build_graph() {
             for(const auto &thread : threads) {
                 thread->join();
             }
+#ifdef WITH_STATS
             for(int i = 0; i < _nr_threads; i++) {
-                std::cout << "Thread " << i << ": " << stats[i] << " tests." << std::endl;
-                total_tests += stats[i];
-                stats[i] = 0;
+                std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "
+                          << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl;
+                total_tests += stats[i]->test_count;
             }
+            _statistics.push_back(stats);
+#endif
             cout << "All tests done for level " << level << '.' << endl;
         } else {
             cout << "No tests left for level " << level << '.' << endl;
