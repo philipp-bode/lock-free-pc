@@ -91,18 +91,18 @@ int main(int argc, char* argv[]) {
     cin.tie(nullptr);
     cout.precision(10);
 
-    // string _match(filename);
-    // std::vector<std::vector<double> > data;
-    // if (_match.find(".csv") == std::string::npos) {
-    //     data = read_csv(filename);
-    // } else if (_match.find(".data") == std::string::npos) {
-    //     data = read_data(filename);
-    // } else {
-    //     std::cout << "Could not process file '" << filename << '\'' << std::endl;
-    //     std::cout << "Has to be .csv or .data format" << std::endl;
-    // }
+    string _match(filename);
+    std::vector<std::vector<double> > data;
+    if (_match.find(".csv") != std::string::npos) {
+        data = read_csv(filename);
+    } else if (_match.find(".data") != std::string::npos) {
+        data = read_data(filename);
+    } else {
+        std::cout << "Cannot process file '" << filename << "\'." << std::endl;
+        std::cout << "Has to be .csv or .data format." << std::endl;
 
-    auto data = read_csv(filename);
+        return 1;
+    }
 
 
     auto alg = make_shared<PCAlgorithm>(data.size(), 0.01, data[0].size(), 4);

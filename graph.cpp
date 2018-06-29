@@ -54,13 +54,11 @@ void Graph::print_mat() const {
 void Graph::print_list() const {
     for(int i = 0; i < _num_nodes; i++) {
         std::vector<int> adj = getNeighbours(i);
-        if (adj.size()) {
-            std::cout << i << " -> ";
-            for (auto const &e : adj) {
-                std::cout << e << ',';
-            }
-            std::cout << std::endl;
+        std::cout << i << " -> ";
+        for (auto const &e : adj) {
+            std::cout << e << ',';
         }
+        std::cout << std::endl;
     }
 }
 
