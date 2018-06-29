@@ -13,6 +13,43 @@
 
 #define rep(a, b)   for(int a = 0; a < (b); ++a)
 
+vector<vector<double>> read_csv(const char *filename) {
+    ifstream file_input(filename);
+    if (!file_input.is_open()) {
+        std::cout << "Could not find file '" << filename << '\'' << std::endl;
+        exit(1);
+    }
+    std::vector<std::vector<double>> data(1, std::vector<double>(1));
+    int variables = 0;
+    int observations = 0;
+    double next_val;
+    char c;
+
+    file_input >> next_val;
+    data[variables][observations] = next_val;
+
+    file_input >> noskipws >>  c;
+    while (file_input.peek()!=EOF) {
+        if(c == ',') {
+            variables++;
+            if(observations == 0 ) {
+                data.push_back(std::vector<double>());
+            }
+        } else if (c == '\r') {
+            file_input >> noskipws >> c;
+            observations++;
+            variables = 0;
+        }
+        file_input >> next_val;
+        data[variables].push_back(next_val);
+        file_input >> noskipws >> c;
+    }
+
+    data[variables].pop_back();
+
+    return data;
+
+}
 
 
 
@@ -54,8 +91,19 @@ int main(int argc, char* argv[]) {
     cin.tie(nullptr);
     cout.precision(10);
 
-    // kann man überlegen, ob man das nicht auch in die Klasse mit rein zieht
-    auto data = read_data(filename);
+    // string _match(filename);
+    // std::vector<std::vector<double> > data;
+    // if (_match.find(".csv") == std::string::npos) {
+    //     data = read_csv(filename);
+    // } else if (_match.find(".data") == std::string::npos) {
+    //     data = read_data(filename);
+    // } else {
+    //     std::cout << "Could not process file '" << filename << '\'' << std::endl;
+    //     std::cout << "Has to be .csv or .data format" << std::endl;
+    // }
+
+    auto data = read_csv(filename);
+
 
     auto alg = make_shared<PCAlgorithm>(data.size(), 0.01, data[0].size(), 4);
 

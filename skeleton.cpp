@@ -125,15 +125,22 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
                     n
             );
             _correlation(i,j) = _correlation(j,i) = pearson;
-            if(pearson < _alpha) {
+        }
+    }
+    _gauss_test = IndepTestGauss(_nr_samples,_correlation);
+
+    std::vector<int> empty_sep(0);
+    rep(i, _nr_variables) {
+        rep(j, i) {
+            auto pearson = _gauss_test.test(i, j, empty_sep);
+            if(pearson >= _alpha) {
                 deleted_edges += 2;
                 _graph->deleteEdge(i,j);
             }
         }
     }
-    cout << "Kicked out: " << deleted_edges << std::endl;
+    cout << "Deleted edges: " << deleted_edges << std::endl;
     _working_graph = std::make_shared<Graph>(*_graph);
-    _gauss_test = IndepTestGauss(_nr_samples,_correlation);
 }
 
 
