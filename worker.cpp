@@ -38,8 +38,8 @@ void Worker::test_single_conditional() {
         vector<int> sep(1);
         bool separated = false;
 
-        for (int i = 0; i < adjX.size(); i++) {
-            sep[0] = adjX[i];
+        for(auto const neighbour : adjX) {
+            sep[0] = neighbour;
             auto p = _alg->test(test.X, test.Y, sep);
             (*_test_count)++;
             if(p >= _alg->_alpha) {
@@ -51,8 +51,6 @@ void Worker::test_single_conditional() {
 
         if (!separated) {
             vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
-            for (int i = 0; i < adjY.size(); i++) {
-                sep[0] = adjY[i];
                 auto p = _alg->test(test.X, test.Y, sep);
                 (*_test_count)++;
                 if(p >= _alg->_alpha) {
@@ -100,8 +98,7 @@ void Worker::test_higher_order() {
         
         vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
 
-        size_t num_elements = adjY.size();
-        if(num_elements) {
+        if(size_t num_elements = adjY.size()) {
             std::vector<int> mask(num_elements, 0);
 
             int last_equal_idx = 0;

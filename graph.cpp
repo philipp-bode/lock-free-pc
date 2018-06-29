@@ -11,6 +11,7 @@ Graph::Graph(int num_nodes) {
 }
 
 Graph::Graph(Graph &g) {
+    g.updateNeighbourCount();
     _adjacencies = g.getAdjacencies();
     _num_nodes = g.getNumberOfNodes();
     _neighbour_count = g.getNeighbourVector();
@@ -19,10 +20,6 @@ Graph::Graph(Graph &g) {
 void Graph::deleteEdge(int node_x, int node_y) {
     _adjacencies.at(node_x, node_y) = 0;
     _adjacencies.at(node_y, node_x) = 0;
-    _update_lock.lock();
-    _neighbour_count[node_x] -= 1;
-    _neighbour_count[node_y] -= 1;
-    _update_lock.unlock();
 }
 
 std::vector<int> Graph::getNeighbours(int node_id) const {
@@ -64,6 +61,15 @@ void Graph::print_list() const {
             }
             std::cout << std::endl;
         }
+    }
+}
+
+void Graph::updateNeighbourCount() {
+    arma::Row<uint8_t> degree_row = arma::sum(_adjacencies);
+    int i = 0;
+    for(auto const e: degree_row) {
+        _neighbour_count[i] = e;
+        i++;
     }
 }
 
