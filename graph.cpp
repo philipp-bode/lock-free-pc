@@ -11,6 +11,7 @@ Graph::Graph(int num_nodes) {
 }
 
 Graph::Graph(Graph &g) {
+    g.updateNeighbourCount();
     _adjacencies = g.getAdjacencies();
     _num_nodes = g.getNumberOfNodes();
     _neighbour_count = g.getNeighbourVector();
@@ -19,10 +20,6 @@ Graph::Graph(Graph &g) {
 void Graph::deleteEdge(int node_x, int node_y) {
     _adjacencies.at(node_x, node_y) = 0;
     _adjacencies.at(node_y, node_x) = 0;
-    // _update_lock.lock();
-    _neighbour_count[node_x] -= 1;
-    _neighbour_count[node_y] -= 1;
-    // _update_lock.unlock();
 }
 
 std::vector<int> Graph::getNeighbours(int node_id) const {
@@ -57,13 +54,20 @@ void Graph::print_mat() const {
 void Graph::print_list() const {
     for(int i = 0; i < _num_nodes; i++) {
         std::vector<int> adj = getNeighbours(i);
-        if (adj.size()) {
-            std::cout << i << " -> ";
-            for (auto const &e : adj) {
-                std::cout << e << ',';
-            }
-            std::cout << std::endl;
+        std::cout << i << " -> ";
+        for (auto const &e : adj) {
+            std::cout << e << ',';
         }
+        std::cout << std::endl;
+    }
+}
+
+void Graph::updateNeighbourCount() {
+    arma::Row<uint8_t> degree_row = arma::sum(_adjacencies);
+    int i = 0;
+    for(auto const e: degree_row) {
+        _neighbour_count[i] = e;
+        i++;
     }
 }
 
@@ -83,12 +87,12 @@ std::vector<int> Graph::getNeighbourVector() {
     return _neighbour_count;
 }
 
-std::vector<int> Graph::getNeighboursWithoutX(int node_id, int x_id) const {
+std::vector<int> Graph::getNeighboursWithout(int node_id, int skip) const {
     std::vector<int> result;
     result.reserve(_num_nodes);
     for (int i = 0; i < _num_nodes; ++i)
     {
-        if(_adjacencies.at(i,node_id) && i != node_id && i != x_id) {
+        if(_adjacencies.at(i,node_id) && i != node_id && i != skip) {
             result.push_back(i);
         }
     }
