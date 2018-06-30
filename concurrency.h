@@ -19,12 +19,6 @@ struct TestInstruction {
     int Y;
 };
 
-struct TestResult{
-    int X;
-    int Y;
-    std::vector<int> S;
-};
-
 struct Statistics{
     int test_count = 0;
     int dequed_elements = 0;
@@ -34,4 +28,3 @@ struct Statistics{
 };
 
 using TaskQueue = std::shared_ptr<moodycamel::ConcurrentQueue<TestInstruction> >;
-using ResultQueue = std::shared_ptr<moodycamel::ConcurrentQueue<TestResult> >;
