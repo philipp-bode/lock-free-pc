@@ -136,12 +136,12 @@ void Worker::test_higher_order() {
                 while (i < num_elements && j < _level) {
                     if (mask[i] == 1) {
                         subset[j] = adjY.at(i);
-                        last_found = j;
+                        last_found = i;
                         j++;
                     }
                     i++;
                 }
-                if (last_found > last_equal_idx) {
+                if (last_found >= last_equal_idx) {
                     set_time(start_gaus)
                     auto p = _alg->test(test.X, test.Y, subset);
                     set_time(end_gaus)
