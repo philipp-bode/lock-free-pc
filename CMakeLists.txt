@@ -5,6 +5,12 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_BUILD_TYPE Release)
 
+option(WITH_STATS "Output stats" ON)
+
+if(WITH_STATS)
+    add_definitions(-DWITH_STATS)
+endif()
+
 set(SOURCE_FILES main.cpp condition.h condition.cpp graph.hpp graph.cpp worker.h worker.cpp skeleton.h skeleton.cpp)
 
 message("${CMAKE_MODULES_PATH}")

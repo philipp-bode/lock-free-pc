@@ -12,10 +12,44 @@
 
 
 #define rep(a, b)   for(int a = 0; a < (b); ++a)
-#define debug(x)    clog << #x << " = " << x << endl;
-#define all(a)      (a).begin(),(a).end()
-// #define endl '\n'
 
+vector<vector<double>> read_csv(const char *filename) {
+    ifstream file_input(filename);
+    if (!file_input.is_open()) {
+        std::cout << "Could not find file '" << filename << '\'' << std::endl;
+        exit(1);
+    }
+    std::vector<std::vector<double>> data(1, std::vector<double>(1));
+    int variables = 0;
+    int observations = 0;
+    double next_val;
+    char c;
+
+    file_input >> next_val;
+    data[variables][observations] = next_val;
+
+    file_input >> noskipws >>  c;
+    while (file_input.peek()!=EOF) {
+        if(c == ',') {
+            variables++;
+            if(observations == 0 ) {
+                data.push_back(std::vector<double>());
+            }
+        } else if (c == '\r') {
+            file_input >> noskipws >> c;
+            observations++;
+            variables = 0;
+        }
+        file_input >> next_val;
+        data[variables].push_back(next_val);
+        file_input >> noskipws >> c;
+    }
+
+    data[variables].pop_back();
+
+    return data;
+
+}
 
 
 
@@ -57,10 +91,21 @@ int main(int argc, char* argv[]) {
     cin.tie(nullptr);
     cout.precision(10);
 
-    // kann man überlegen, ob man das nicht auch in die Klasse mit rein zieht
-    auto data = read_data(filename);
+    string _match(filename);
+    std::vector<std::vector<double> > data;
+    if (_match.find(".csv") != std::string::npos) {
+        data = read_csv(filename);
+    } else if (_match.find(".data") != std::string::npos) {
+        data = read_data(filename);
+    } else {
+        std::cout << "Cannot process file '" << filename << "\'." << std::endl;
+        std::cout << "Has to be .csv or .data format." << std::endl;
 
-    auto alg = make_shared<PCAlgorithm>(data.size(), 0.1, data[0].size(), 4);
+        return 1;
+    }
+
+
+    auto alg = make_shared<PCAlgorithm>(data.size(), 0.01, data[0].size(), 4);
 
     alg->build_correlation_matrix(data);
 
@@ -68,24 +113,6 @@ int main(int argc, char* argv[]) {
     alg->build_graph();
 
     alg->print_graph();
-
-
-    // std::vector<uint> sep1 = {5};
-    // std::vector<uint> sep2 = {3};
-    // std::vector<uint> sep3 = {5};
-
-    // IndepTestGauss indepTest(6,alg._correlation);
-    // cout << indepTest.test(3,4, {5}) << endl;
-    // cout << indepTest.test(4,5, sep2) << endl;
-    // cout << indepTest.test(0,1, sep3) << endl;
-
-    // alg._work_queue.enqueue(TestInstruction(1,56,57, vector<int>{1,2,3,4}));
-    // TestInstruction test;
-    // cout << "Aprrox. Size: " << alg._work_queue.size_approx() << endl;
-    // bool found = alg._work_queue.try_dequeue(test);
-    // cout << "Found: " << found << endl;
-    // cout << test.X << '|' << test.Y << endl;
-    // cout << "Aprrox. Size: " << alg._work_queue.size_approx() << endl;
 
     cout.flush();
     return 0;
