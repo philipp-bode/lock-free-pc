@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
     alg->build_correlation_matrix(data);
 
     alg->build_graph();
-    set_time(stop);
+    set_time(end);
 
     alg->print_graph();
     double duration = 0.0;
