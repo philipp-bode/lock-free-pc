@@ -70,6 +70,7 @@ void Worker::test_single_conditional() {
 void Worker::test_higher_order() {
     TestInstruction test;
     std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_gaus,end_gaus;
+    bool separated = false;
 
     while(_work_queue->try_dequeue(test)) {
         set_time(start_loop)
@@ -102,6 +103,7 @@ void Worker::test_higher_order() {
                 increment_stat(_statistics->test_count)
                 if(p >= _alg->_alpha) {
                     update_result(test.X, test.Y, subset);
+                    separated = true;
                     break;
                 }
             } while (std::next_permutation(maskX.begin(), maskX.end()));
@@ -109,7 +111,7 @@ void Worker::test_higher_order() {
         
         vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
 
-        if(size_t num_elements = adjY.size()) {
+        if(size_t num_elements = adjY.size() && !separated) {
             std::vector<int> mask(num_elements, 0);
 
             // int last_equal_idx = 0;
