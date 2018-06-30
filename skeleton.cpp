@@ -143,4 +143,15 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
     _working_graph = std::make_shared<Graph>(*_graph);
 }
 
+void PCAlgorithm::print_separation_set(int x, int y) {
+         auto pt = (*_separation_matrix)[x * _nr_variables + y];
+         if (pt != nullptr) {
+             cout << "Sep for: " << x << ", " << y << endl;
+             for(auto const s: *pt) {
+                 cout << s << ' ';
+             }
+             cout << std::endl;
+         }
+}
+
 

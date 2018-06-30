@@ -40,6 +40,7 @@ public:
     }
 
 protected:
+    void print_separation_set(int x, int y);
 
     TaskQueue _work_queue;
     ResultQueue _result_queue;
