@@ -66,7 +66,8 @@ void Graph::print_list() const {
 }
 
 void Graph::updateNeighbourCount() {
-    arma::Row<uint8_t> degree_row = arma::sum(_adjacencies);
+    arma::Mat<uint> N = arma::conv_to<arma::Mat<uint>>::from(_adjacencies);
+    arma::Row<uint> degree_row = arma::sum(N);
     int i = 0;
     for(auto const e: degree_row) {
         _neighbour_count[i] = e;
