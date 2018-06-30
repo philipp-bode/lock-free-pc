@@ -55,9 +55,12 @@ void Graph::print_list() const {
     for(int i = 0; i < _num_nodes; i++) {
         std::vector<int> adj = getNeighbours(i);
         std::cout << i << " -> ";
-        for (auto const &e : adj) {
-            std::cout << e << ',';
-        }
+
+        auto begin = adj.begin();
+        if (begin != adj.end())
+          std::cout << *begin++;
+        while (begin != adj.end())
+          std::cout << ',' << *begin++;
         std::cout << std::endl;
     }
 }
