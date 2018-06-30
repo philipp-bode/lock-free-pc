@@ -77,8 +77,9 @@ void Worker::test_higher_order() {
         
         vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
         bool separated = false;
-        
-        if(size_t num_elementsX = adjX.size()) {
+
+        size_t num_elementsX = adjX.size();
+        if(num_elementsX >= _level) {
             std::vector<int> maskX (num_elementsX, 0);
 
             for (int i = 0; i < _level; i++) {
@@ -112,7 +113,7 @@ void Worker::test_higher_order() {
         vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
 
         size_t num_elements = adjY.size();
-        if(!separated && num_elements) {
+        if(!separated && num_elements >= _level) {
             std::vector<int> mask(num_elements, 0);
 
             int last_equal_idx = 0;
