@@ -115,14 +115,14 @@ void Worker::test_higher_order() {
         if(!separated && num_elements) {
             std::vector<int> mask(num_elements, 0);
 
-            // int last_equal_idx = 0;
-            // for (auto node : adjX) {
-            //     auto iter = find(adjY.begin(), adjY.end(), node);
-            //     if (iter != adjY.end()) {
-            //         iter_swap(adjY.begin() + last_equal_idx, iter);
-            //         last_equal_idx++;
-            //     }
-            // }
+            int last_equal_idx = 0;
+            for (auto node : adjX) {
+                auto iter = find(adjY.begin(), adjY.end(), node);
+                if (iter != adjY.end()) {
+                    iter_swap(adjY.begin() + last_equal_idx, iter);
+                    last_equal_idx++;
+                }
+            }
 
             for (int i = 0; i < _level; i++) {
                 mask[i] = 1;
@@ -141,7 +141,7 @@ void Worker::test_higher_order() {
                     }
                     i++;
                 }
-                // if (last_found > last_equal_idx) {
+                if (last_found > last_equal_idx) {
                     set_time(start_gaus)
                     auto p = _alg->test(test.X, test.Y, subset);
                     set_time(end_gaus)
@@ -151,7 +151,7 @@ void Worker::test_higher_order() {
                         update_result(test.X, test.Y, subset);
                         break;
                     }
-                // }
+                }
             } while (std::next_permutation(mask.begin(), mask.end()));
         }
     }
