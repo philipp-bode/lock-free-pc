@@ -21,13 +21,9 @@ public:
 
     void set_max(int new_max);
 
-    // could be possible we need this later for better synchronization 
-    bool done() const;
-
 protected:
     std::vector<int> *_stats;
     int _max;
-    bool _done = false; // needs do 
 };
 
 #endif //PARALLELPC_WATCHER_H

@@ -28,15 +28,8 @@ void Watcher::watch() {
 
         std::this_thread::sleep_for(sec);
     }
-
-    // needs a mutex to guarantee thread safety
-    _done = true;
 }
 
 void Watcher::set_max(int new_max) {
     _max = new_max;
-}
-
-bool Watcher::done() const {
-    return _done;
 }
