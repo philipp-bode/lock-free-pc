@@ -22,7 +22,8 @@ public:
         std::shared_ptr<Statistics> statistics
     );
 
-    // Task to fetch test from _work_queue and put the results to _result_queue
+    // Task to fetch test from _work_queue
+    // and put the results the working graph and the separation matrix.
     void execute_test();
 
     // Write independence test results to the graph and separation set store 

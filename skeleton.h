@@ -43,7 +43,6 @@ protected:
     void print_separation_set(int x, int y);
 
     TaskQueue _work_queue;
-    ResultQueue _result_queue;
     IndepTestGauss _gauss_test;
     const int STRIDE = 1;
     int _nr_variables;
@@ -52,7 +51,6 @@ protected:
     arma::Mat<double>_correlation;
     shared_ptr<Graph> _graph;
     shared_ptr<Graph> _working_graph;
-    vector<TestResult> _separation_sets;
     shared_ptr<vector<shared_ptr<vector<int>>>> _separation_matrix;
 
     void print_vector(const vector<int> &S) const {

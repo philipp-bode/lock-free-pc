@@ -5,7 +5,6 @@ PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
     _correlation = arma::Mat<double>(vars, vars, arma::fill::eye);
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
     _work_queue = std::make_shared<moodycamel::ConcurrentQueue<TestInstruction> >();
-    _result_queue = std::make_shared<moodycamel::ConcurrentQueue<TestResult> >();
     _separation_matrix = std::make_shared<std::vector<std::shared_ptr<std::vector<int>>>>(_nr_variables*_nr_variables, nullptr);
 }
 
@@ -144,14 +143,14 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
 }
 
 void PCAlgorithm::print_separation_set(int x, int y) {
-         auto pt = (*_separation_matrix)[x * _nr_variables + y];
-         if (pt != nullptr) {
-             cout << "Sep for: " << x << ", " << y << endl;
-             for(auto const s: *pt) {
-                 cout << s << ' ';
-             }
-             cout << std::endl;
+     auto pt = (*_separation_matrix)[x * _nr_variables + y];
+     if (pt != nullptr) {
+         cout << "Sep for: " << x << ", " << y << endl;
+         for(auto const s: *pt) {
+             cout << s << ' ';
          }
+         cout << std::endl;
+     }
 }
 
 
