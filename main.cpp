@@ -5,7 +5,7 @@
 #include "condition.h"
 #include "worker.h"
 #include "graph.hpp"
-
+#include "concurrency.h"
 #include "skeleton.h"
 
 #include "concurrentqueue/blockingconcurrentqueue.h"
@@ -105,14 +105,19 @@ int main(int argc, char* argv[]) {
     }
 
 
+    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
     auto alg = make_shared<PCAlgorithm>(data.size(), 0.01, data[0].size(), 4);
 
+    set_time(start);
     alg->build_correlation_matrix(data);
 
-
     alg->build_graph();
+    set_time(end);
 
     alg->print_graph();
+    double duration = 0.0;
+    add_time_to(duration, start, end)
+    std::cout << "Total time algo: " << duration << "s" << std::endl;
 
     cout.flush();
     return 0;
