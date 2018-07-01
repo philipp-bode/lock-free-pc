@@ -19,10 +19,10 @@ void PCAlgorithm::build_graph() {
     std::chrono::time_point<std::chrono::high_resolution_clock> start_queue, end_queue, start_worker, end_worker;
     
     cout << "Starting to fill test_queue" << endl;
-    set_time(start_queue)
 
     // we want to run as long as their are edges remaining to test on a higher level
     while(!nodes_to_be_tested.empty()) {
+        set_time(start_queue)
         int queue_size = 0;
         std::vector<int> nodes_to_delete(0);
         // iterate over all edges to determine if they still can be tested on this level
