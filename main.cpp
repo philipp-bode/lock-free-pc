@@ -80,10 +80,15 @@ vector<vector<double>> read_data(const char *filename) {
 
 int main(int argc, char* argv[]) {
     const char *filename;
-    if (argc == 2) {
-       filename = argv[1];
+    int nr_threads;
+
+    if (argc == 3) {
+        istringstream ss(argv[1]);
+        if (!(ss >> nr_threads))
+            cerr << "Invalid number " << argv[1] << '\n';
+       filename = argv[2];
     } else {
-        cout << "Usage: ./ParallelPC.out Filename\n";
+        cout << "Usage: ./ParallelPC.out <number_of_threads> <filename>" << std::endl;
         return 1;
     }
 
@@ -106,7 +111,7 @@ int main(int argc, char* argv[]) {
 
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
-    auto alg = make_shared<PCAlgorithm>(data.size(), 0.01, data[0].size(), 4);
+    auto alg = make_shared<PCAlgorithm>(data.size(), 0.01, data[0].size(), nr_threads);
 
     set_time(start);
     alg->build_correlation_matrix(data);
