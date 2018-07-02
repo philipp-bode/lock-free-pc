@@ -76,13 +76,23 @@ void PCAlgorithm::build_graph() {
 #ifdef WITH_STATS
             cout << "Duration queue fuelling: " << duration_queue << " s" << endl;
             cout << "Duration queue processing: " << duration_worker << " s" << endl;
+            double tests_total = 0.0;
+            double elements_total = 0.0;
             for(int i = 0; i < _nr_threads; i++) {
                 std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "
                           << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl;
+                std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000 << " ms for all tests and "
+                          << stats[i]->sum_time_queue_element*1000 << " ms for all queued elements in total" << std::endl;
                 std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus/stats[i]->test_count*1000 << " ms per test on average and "
                           << stats[i]->sum_time_queue_element/stats[i]->dequed_elements*1000 << " ms per queue element on average" << std::endl;
                 total_tests += stats[i]->test_count;
+                tests_total += stats[i]->sum_time_gaus;
+                elements_total += stats[i]->sum_time_queue_element;
             }
+
+            cout << "Total time for tests " << tests_total << "s and total time for all workers: " << elements_total << "s." << endl;
+            cout << "Percentage tests: " << ((elements_total-tests_total)/elements_total)*100.0 << "%." << endl;
+
 #endif
             cout << "All tests done for level " << level << '.' << endl;
             stats.resize(0);
