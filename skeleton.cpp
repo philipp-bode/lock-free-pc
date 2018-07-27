@@ -83,8 +83,8 @@ void PCAlgorithm::build_graph() {
                           << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl;
                 std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000 << " ms for all tests and "
                           << stats[i]->sum_time_queue_element*1000 << " ms for all queued elements in total" << std::endl;
-                std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus/stats[i]->test_count*1000 << " ms per test on average and "
-                          << stats[i]->sum_time_queue_element/stats[i]->dequed_elements*1000 << " ms per queue element on average" << std::endl;
+                std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000/stats[i]->test_count << " ms per test on average and "
+                          << stats[i]->sum_time_queue_element*1000/stats[i]->dequed_elements << " ms per queue element on average" << std::endl;
                 total_tests += stats[i]->test_count;
                 tests_total += stats[i]->sum_time_gaus;
                 elements_total += stats[i]->sum_time_queue_element;
