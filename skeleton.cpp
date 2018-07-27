@@ -91,7 +91,7 @@ void PCAlgorithm::build_graph() {
             }
 
             cout << "Total time for tests " << tests_total << "s and total time for all workers: " << elements_total << "s." << endl;
-            cout << "Percentage tests: " << ((elements_total-tests_total)/elements_total)*100.0 << "%." << endl;
+            cout << "Percentage tests: " << (tests_total/elements_total)*100.0 << "%." << endl;
 
 #endif
             cout << "All tests done for level " << level << '.' << endl;
