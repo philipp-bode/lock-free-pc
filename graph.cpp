@@ -7,14 +7,14 @@ Graph::Graph(int num_nodes) {
     _adjacencies = arma::Mat<uint8_t>(num_nodes, num_nodes, arma::fill::ones);
     _adjacencies.diag().zeros();
     _num_nodes = num_nodes;
-    _neighbour_count = std::vector<int>(num_nodes, num_nodes-1);
+    _adjacency_lists = std::vector<std::vector<int>>(num_nodes, std::vector<int>());
 }
 
 Graph::Graph(Graph &g) {
-    g.updateNeighbourCount();
+    g.updateNeighbours();
     _adjacencies = g.getAdjacencies();
+    _adjacency_lists = g.getAdjacencyLists();
     _num_nodes = g.getNumberOfNodes();
-    _neighbour_count = g.getNeighbourVector();
 }
 
 void Graph::deleteEdge(int node_x, int node_y) {
@@ -23,16 +23,7 @@ void Graph::deleteEdge(int node_x, int node_y) {
 }
 
 std::vector<int> Graph::getNeighbours(int node_id) const {
-    std::vector<int> result;
-    result.reserve(_num_nodes);
-    for (int i = 0; i < _num_nodes; ++i)
-    {
-        if(_adjacencies.at(i,node_id) && i != node_id) {
-            result.push_back(i);
-        }
-    }
-
-    return result;
+    return _adjacency_lists[node_id];
 }
 
 std::vector<std::pair<int,int> > Graph::getEdgesToTest() const {
@@ -65,18 +56,20 @@ void Graph::print_list() const {
     }
 }
 
-void Graph::updateNeighbourCount() {
-    arma::Mat<uint> N = arma::conv_to<arma::Mat<uint>>::from(_adjacencies);
-    arma::Row<uint> degree_row = arma::sum(N);
-    int i = 0;
-    for(auto const e: degree_row) {
-        _neighbour_count[i] = e;
-        i++;
+void Graph::updateNeighbours() {
+    for (int i = 0; i < _num_nodes; ++i) {
+        _adjacency_lists[i].clear();
+        for (int j = 0; j < _num_nodes; ++j) {
+            if(_adjacencies.at(i,j) && i != j) {
+                _adjacency_lists[i].push_back(j);
+            }
+        }
     }
+
 }
 
 int Graph::getNeighbourCount(int node_id) const {
-    return _neighbour_count[node_id];
+    return _adjacency_lists[node_id].size();
 }
 
 int Graph::getNumberOfNodes() {
@@ -87,8 +80,8 @@ arma::Mat<uint8_t> Graph::getAdjacencies() {
     return _adjacencies;
 }
 
-std::vector<int> Graph::getNeighbourVector() {
-    return _neighbour_count;
+std::vector<std::vector<int>> Graph::getAdjacencyLists() {
+    return _adjacency_lists;
 }
 
 std::vector<int> Graph::getNeighboursWithout(int node_id, int skip) const {
