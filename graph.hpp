@@ -14,8 +14,9 @@ public:
     std::vector<int> getNeighboursWithout(int node_id, int skip) const;
     int getNeighbourCount(int node_id) const;
     arma::Mat<uint8_t> getAdjacencies();
+    std::vector<std::vector<int>> getAdjacencyLists();
     std::vector<int> getNeighbourVector();
-    void updateNeighbourCount();
+    void updateNeighbours();
     int getNumberOfNodes();
 
     std::vector<std::pair<int,int>> getEdgesToTest() const;
@@ -26,7 +27,7 @@ public:
 
 protected:
     arma::Mat<uint8_t> _adjacencies;
-    std::vector<int> _neighbour_count;
+    std::vector<std::vector<int>> _adjacency_lists;
     int _num_nodes;
 
 };
