@@ -6,10 +6,12 @@
 
 #include "graph.hpp"
 
+#include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <string>
 #include <vector>
 #include <unordered_set>
-#include <algorithm>
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_statistics.h>
@@ -39,8 +41,10 @@ public:
         return _gauss_test.test(u,v,S);
     }
 
+    void persist_result(const std::string data_name, const std::vector<std::string> &column_names);
+
+
 protected:
-    void print_separation_set(int x, int y);
 
     TaskQueue _work_queue;
     IndepTestGauss _gauss_test;

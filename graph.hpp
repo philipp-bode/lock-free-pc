@@ -1,6 +1,7 @@
 #pragma once
 
 #include <armadillo>
+#include <string>
 #include <vector>
 #include <memory>
 
