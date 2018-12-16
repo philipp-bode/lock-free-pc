@@ -79,12 +79,12 @@ void PCAlgorithm::build_graph() {
             double tests_total = 0.0;
             double elements_total = 0.0;
             for(int i = 0; i < _nr_threads; i++) {
-                std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "
-                          << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl;
-                std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000 << " ms for all tests and "
-                          << stats[i]->sum_time_queue_element*1000 << " ms for all queued elements in total" << std::endl;
-                std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000/stats[i]->test_count << " ms per test on average and "
-                          << stats[i]->sum_time_queue_element*1000/stats[i]->dequed_elements << " ms per queue element on average" << std::endl;
+                // std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "
+                //           << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl;
+                // std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000 << " ms for all tests and "
+                //           << stats[i]->sum_time_queue_element*1000 << " ms for all queued elements in total" << std::endl;
+                // std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000/stats[i]->test_count << " ms per test on average and "
+                //           << stats[i]->sum_time_queue_element*1000/stats[i]->dequed_elements << " ms per queue element on average" << std::endl;
                 total_tests += stats[i]->test_count;
                 tests_total += stats[i]->sum_time_gaus;
                 elements_total += stats[i]->sum_time_queue_element;
@@ -152,15 +152,62 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
     _working_graph = std::make_shared<Graph>(*_graph);
 }
 
-void PCAlgorithm::print_separation_set(int x, int y) {
-     auto pt = (*_separation_matrix)[x * _nr_variables + y];
-     if (pt != nullptr) {
-         cout << "Sep for: " << x << ", " << y << endl;
-         for(auto const s: *pt) {
-             cout << s << ' ';
-         }
-         cout << std::endl;
-     }
+void PCAlgorithm::persist_result(
+    const std::string data_name,
+    const std::vector<std::string> &column_names
+) {
+    std::function<std::string(int)> _node = [&column_names] (int i) {return std::to_string(i);};
+    if (column_names.size() == _correlation.n_rows)
+        _node = [&column_names] (int i) {return column_names[i];};
+
+    // Create dir
+    std::string filename = data_name;
+    const size_t last_slash_idx = filename.find_last_of("\\/");
+    if (std::string::npos != last_slash_idx)
+        filename.erase(0, last_slash_idx + 1);
+
+    // Remove extension if present.
+    const size_t period_idx = filename.rfind('.');
+    if (std::string::npos != period_idx)
+        filename.erase(period_idx);
+
+    std::string dir_name = "results_" + filename + "_" + std::to_string(_alpha) + "/";
+    system(("mkdir -p " + dir_name).c_str());
+
+    // Save nodes
+    ofstream node_file;
+    node_file.open(dir_name + "nodes.txt");
+    for (const auto c : column_names) {
+        node_file << c << std::endl;
+    }
+
+    // Save graph
+    ofstream graph_file;
+    graph_file.open(dir_name + "skeleton.txt");
+
+    for (int i = 0; i < _correlation.n_rows; i++) {
+        for (const auto j : _graph->getNeighbours(i)) {
+            graph_file << _node(i) << " " << _node(j) << std::endl;
+        }
+    }
+
+    // Save correlation matrix
+    _correlation.save(dir_name + "corr.csv" , arma::raw_ascii);
+
+    // Save separation set information
+    ofstream sepset_file;
+    sepset_file.open(dir_name + "sepset.txt");
+
+    rep(i, _nr_variables) {
+        rep(j, _nr_variables) {
+            auto pt = (*_separation_matrix)[i * _nr_variables + j];
+            if (pt != nullptr) {
+                sepset_file << i << " " << j << " ";
+                for (auto const s : *pt) {
+                    sepset_file << s << ' ';
+                }
+                sepset_file << std::endl;
+            }
+        }
+    }
 }
-
-
