@@ -192,7 +192,7 @@ void PCAlgorithm::persist_result(
     }
 
     // Save correlation matrix
-    _correlation.save(dir_name + "corr.csv" , arma::raw_ascii);
+    _correlation.save(dir_name + "corr.csv" , arma::csv_ascii);
 
     // Save separation set information
     ofstream sepset_file;
