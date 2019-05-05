@@ -27,6 +27,7 @@ find_package(GSL REQUIRED)
 
 find_package(Armadillo REQUIRED)
 find_package(Boost REQUIRED)
+find_package(OpenMP REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 target_link_libraries(ParallelPC
@@ -34,4 +35,5 @@ target_link_libraries(ParallelPC
     GSL::gsl
     GSL::gslcblas
     ${ARMADILLO_LIBRARIES}
+    OpenMP::OpenMP_CXX
 )

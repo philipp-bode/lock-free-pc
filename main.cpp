@@ -137,29 +137,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_graph,start_correlation,start, end_graph,end_correlation,end;
     auto alg = make_shared<PCAlgorithm>(data.size(), alpha, data[0].size(), nr_threads);
 
-    set_time(start);
-    set_time(start_correlation);
     alg->build_correlation_matrix(data);
-    set_time(end_correlation);
 
-    set_time(start_graph)
     alg->build_graph();
-    set_time(end_graph)
-    set_time(end);
 
     alg->print_graph();
-    double duration = 0.0;
-    double duration_graph = 0.0;
-    double duration_correlation = 0.0;
-    add_time_to(duration, start, end)
-    add_time_to(duration_correlation, start_correlation, end_correlation)
-    add_time_to(duration_graph, start_graph, end_graph)
-    std::cout << "Total time algo: " << duration << "s" << std::endl;
-    std::cout << "Total time correlation: " << duration_correlation << "s" << std::endl;
-    std::cout << "Total time graph: " << duration_graph << "s" << std::endl;
 
     alg->persist_result(filename, column_names);
     cout.flush();

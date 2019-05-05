@@ -1,3 +1,4 @@
+#include <omp.h>
 #include "skeleton.h"
 #include "worker.h"
 
@@ -14,15 +15,14 @@ void PCAlgorithm::build_graph() {
     int level = 1;
     std::unordered_set<int> nodes_to_be_tested;
     for (int i = 0; i < _nr_variables; ++i) nodes_to_be_tested.insert(nodes_to_be_tested.end(), i);
-    std::vector<int> stats(_nr_threads, 0);
+    std::vector<int> stats(_nr_threads, 0); // measure balance
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_queue, end_queue, start_worker, end_worker;
-    
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_level, end_level;
     cout << "Starting to fill test_queue" << endl;
 
     // we want to run as long as their are edges remaining to test on a higher level
     while(!nodes_to_be_tested.empty()) {
-        set_time(start_queue)
+        set_time(start_level)
         int queue_size = 0;
         std::vector<int> nodes_to_delete(0);
         // iterate over all edges to determine if they still can be tested on this level
@@ -41,18 +41,13 @@ void PCAlgorithm::build_graph() {
             }
             // only do the independence testing if the current_node has enough neighbours do create a separation set
         }
-        set_time(end_queue)
-        double duration_queue = 0.0;
-        add_time_to(duration_queue, start_queue, end_queue)
         if(queue_size) {
-            cout << "Queued all " << queue_size << " pairs, waiting for results.." << endl;
 
             vector<shared_ptr<thread> > threads;
             // we could think of making this a member variable and create the workers once and only the threads if they are needed
             vector<shared_ptr<Worker> > workers;
             vector<shared_ptr<Statistics> > stats(_nr_threads);
 
-            set_time(start_worker)
             rep(i,_nr_threads) {
                 stats[i] = std::make_shared<Statistics>();
                 workers.push_back(make_shared<Worker>(
@@ -70,32 +65,15 @@ void PCAlgorithm::build_graph() {
             for(const auto &thread : threads) {
                 thread->join();
             }
-            set_time(end_worker)
-            double duration_worker = 0.0;
-            add_time_to(duration_worker, start_worker, end_worker)
-#ifdef WITH_STATS
-            cout << "Duration queue fuelling: " << duration_queue << " s" << endl;
-            cout << "Duration queue processing: " << duration_worker << " s" << endl;
-            double tests_total = 0.0;
-            double elements_total = 0.0;
-            for(int i = 0; i < _nr_threads; i++) {
-                // std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "
-                //           << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl;
-                // std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000 << " ms for all tests and "
-                //           << stats[i]->sum_time_queue_element*1000 << " ms for all queued elements in total" << std::endl;
-                // std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000/stats[i]->test_count << " ms per test on average and "
-                //           << stats[i]->sum_time_queue_element*1000/stats[i]->dequed_elements << " ms per queue element on average" << std::endl;
-                total_tests += stats[i]->test_count;
-                tests_total += stats[i]->sum_time_gaus;
-                elements_total += stats[i]->sum_time_queue_element;
-            }
 
-            cout << "Total time for tests " << tests_total << "s and total time for all workers: " << elements_total << "s." << endl;
-            cout << "Percentage tests: " << (tests_total/elements_total)*100.0 << "%." << endl;
+            for(int i = 0; i < _nr_threads; i++) {  // measure balance
+                std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "  // measure balance
+                          << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl; // measure balance
+                total_tests += stats[i]->test_count; // measure balance
+            } // measure balance
 
-#endif
             cout << "All tests done for level " << level << '.' << endl;
-            stats.resize(0);
+            stats.resize(0); // measure balance
         } else {
             cout << "No tests left for level " << level << '.' << endl;
             _graph = std::make_shared<Graph>(*_working_graph);
@@ -108,6 +86,10 @@ void PCAlgorithm::build_graph() {
         }
         _graph = std::make_shared<Graph>(*_working_graph);
         level++;
+        set_time(end_level)
+        double duration_level = 0.0;
+        add_time_to(duration_level, start_level, end_level)
+        cout << "Duration processing level " << level - 1 << " in seconds: " << duration_level << endl;
     }
 
     cout << "Total independence tests made: " << total_tests << std::endl;
@@ -139,7 +121,12 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
 
     std::vector<int> empty_sep(0);
+    // Level zero happens next, added measures for it, note it happens not in parallel!
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_l0, end_l0;
+    omp_set_num_threads(_nr_threads);
+    set_time(start_l0);
     rep(i, _nr_variables) {
+        #pragma omp parallel for
         rep(j, i) {
             auto pearson = _gauss_test.test(i, j, empty_sep);
             if(pearson >= _alpha) {
@@ -148,6 +135,10 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
             }
         }
     }
+    set_time(end_l0);
+    double duration_l0 = 0.0;
+    add_time_to(duration_l0, start_l0, end_l0);
+    cout << "Time for level 0 in seconds: " << duration_l0 << std::endl;
     cout << "Deleted edges: " << deleted_edges << std::endl;
     _working_graph = std::make_shared<Graph>(*_graph);
 }
