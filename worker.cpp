@@ -135,7 +135,6 @@ void Worker::test_higher_order() {
                 int i = 0, j = 0;
                 int first_found = -1;
                 while (i < num_elements && j < _level) {
-                    //if (mask[i] == 1) {
                     if (mask[i] == 0) {
                         subset[j] = neighbors.at(i);
                         j++;
