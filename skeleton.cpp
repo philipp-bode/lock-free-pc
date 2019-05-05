@@ -15,7 +15,6 @@ void PCAlgorithm::build_graph() {
     int level = 1;
     std::unordered_set<int> nodes_to_be_tested;
     for (int i = 0; i < _nr_variables; ++i) nodes_to_be_tested.insert(nodes_to_be_tested.end(), i);
-    std::vector<int> stats(_nr_threads, 0); // measure balance
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start_level, end_level;
     cout << "Starting to fill test_queue" << endl;
@@ -65,15 +64,8 @@ void PCAlgorithm::build_graph() {
             for(const auto &thread : threads) {
                 thread->join();
             }
-
-            for(int i = 0; i < _nr_threads; i++) {  // measure balance
-                std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "  // measure balance
-                          << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl; // measure balance
-                total_tests += stats[i]->test_count; // measure balance
-            } // measure balance
-
             cout << "All tests done for level " << level << '.' << endl;
-            stats.resize(0); // measure balance
+            stats.resize(0);
         } else {
             cout << "No tests left for level " << level << '.' << endl;
             _graph = std::make_shared<Graph>(*_working_graph);

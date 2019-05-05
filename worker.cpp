@@ -29,7 +29,6 @@ void Worker::test_single_conditional() {
     TestInstruction test;
 
     while(_work_queue->try_dequeue(test)) {
-        increment_stat(_statistics->dequed_elements)  // measure balance
         vector<int> adjX = _graph->getNeighboursWithout(test.Y, test.X);
         vector<int> sep(1);
         bool separated = false;
@@ -37,7 +36,6 @@ void Worker::test_single_conditional() {
         for(auto const neighbour : adjX) {
             sep[0] = neighbour;
             auto p = _alg->test(test.X, test.Y, sep);
-            increment_stat(_statistics->test_count)  // measure balance
             if(p >= _alg->_alpha) {
                 update_result(test.X, test.Y, sep);
                 separated = true;
@@ -52,7 +50,6 @@ void Worker::test_single_conditional() {
             for(auto const neighbour : adjY) {
                 sep[0] = neighbour;
                 auto p = _alg->test(test.X, test.Y, sep);
-                increment_stat(_statistics->test_count)  // measure balance
                 if(p >= _alg->_alpha) {
                     update_result(test.X, test.Y, sep);
                     break;
@@ -66,7 +63,6 @@ void Worker::test_single_conditional() {
 void Worker::test_higher_order() {
     TestInstruction test;
     while(_work_queue->try_dequeue(test)) {
-        increment_stat(_statistics->dequed_elements) // measure balance
         
         if(test.X > test.Y) {
             auto tmp = test.X;
@@ -97,7 +93,6 @@ void Worker::test_higher_order() {
                     i++;
                 }
                 auto p = _alg->test(test.X, test.Y, subset);
-                increment_stat(_statistics->test_count) // measure balance
                 if(p >= _alg->_alpha) {
                     update_result(test.X, test.Y, subset);
                     separated = true;
@@ -146,7 +141,6 @@ void Worker::test_higher_order() {
                 }
                 if (first_found < first_equal_idx) {
                     auto p = _alg->test(test.X, test.Y, subset);
-                    increment_stat(_statistics->test_count) // measure balance
                     if (p >= _alg->_alpha) {
                         update_result(test.X, test.Y, subset);
                         break;
