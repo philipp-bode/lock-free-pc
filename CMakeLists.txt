@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ParallelPC)
+project(lockfreepc)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
@@ -15,13 +15,7 @@ set(SOURCE_FILES main.cpp constraint.hpp constraint.cpp graph.hpp graph.cpp work
 
 message("${CMAKE_MODULES_PATH}")
 
-add_executable(ParallelPC ${SOURCE_FILES})
-
-set_target_properties(
-    ParallelPC
-    PROPERTIES 
-        SUFFIX ".out"
-)
+add_executable(lockfreepc ${SOURCE_FILES})
 
 find_package(GSL REQUIRED)
 
@@ -29,7 +23,7 @@ find_package(Armadillo REQUIRED)
 find_package(Boost REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
-target_link_libraries(ParallelPC
+target_link_libraries(lockfreepc
     pthread
     GSL::gsl
     GSL::gslcblas

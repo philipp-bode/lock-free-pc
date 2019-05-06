@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
                cerr << "Invalid number " << argv[3] << '\n';
        }
     } else {
-        cout << "Usage: ./ParallelPC.out <number_of_threads> <filename> [alpha=0.01]" << std::endl;
+        cout << "Usage: ./lockfreepc <number_of_threads> <filename> [alpha=0.01]" << std::endl;
         return 1;
     }
 
