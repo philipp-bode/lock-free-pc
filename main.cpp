@@ -2,7 +2,7 @@
 #include <vector>
 #include <thread>
 
-#include "condition.h"
+#include "constraint.hpp"
 #include "worker.h"
 #include "graph.hpp"
 #include "concurrency.h"

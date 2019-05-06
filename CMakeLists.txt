@@ -11,7 +11,7 @@ if(WITH_STATS)
     add_definitions(-DWITH_STATS)
 endif()
 
-set(SOURCE_FILES main.cpp condition.h condition.cpp graph.hpp graph.cpp worker.h worker.cpp skeleton.h skeleton.cpp)
+set(SOURCE_FILES main.cpp constraint.hpp constraint.cpp graph.hpp graph.cpp worker.h worker.cpp skeleton.h skeleton.cpp)
 
 message("${CMAKE_MODULES_PATH}")
 

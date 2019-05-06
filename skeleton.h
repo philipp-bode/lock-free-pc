@@ -19,7 +19,7 @@
 #include <armadillo>
 
 #include "concurrency.h"
-#include "condition.h"
+#include "constraint.hpp"
 
 
 using namespace std;
