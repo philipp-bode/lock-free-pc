@@ -155,7 +155,7 @@ void PCAlgorithm::persist_result(
         filename.erase(period_idx);
 
     std::string dir_name = "results_" + filename + "_" + std::to_string(_alpha) + "/";
-    system(("mkdir -p " + dir_name).c_str());
+    int exit_code = system(("mkdir -p " + dir_name).c_str());
 
     // Save nodes
     ofstream node_file;
