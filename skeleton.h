@@ -1,5 +1,5 @@
-#ifndef PARALLELPC_SKELETON_H
-#define PARALLELPC_SKELETON_H
+#ifndef LOCKFREEPC_SKELETON_H
+#define LOCKFREEPC_SKELETON_H
 
 
 #define rep(a, b)   for(int a = 0; a < (b); ++a)
@@ -19,7 +19,7 @@
 #include <armadillo>
 
 #include "concurrency.h"
-#include "condition.h"
+#include "constraint.hpp"
 
 
 using namespace std;
@@ -64,4 +64,4 @@ protected:
     }
 };
 
-#endif //PARALLELPC_SKELETON_H
+#endif //LOCKFREEPC_SKELETON_H

@@ -1,5 +1,5 @@
-#ifndef PARALLELPC_WORKER_H
-#define PARALLELPC_WORKER_H
+#ifndef LOCKFREEPC_WORKER_H
+#define LOCKFREEPC_WORKER_H
 
 
 #include <memory>
@@ -45,4 +45,4 @@ protected:
     std::shared_ptr<Statistics> _statistics;
 };
 
-#endif //PARALLELPC_WORKER_H
+#endif //LOCKFREEPC_WORKER_H

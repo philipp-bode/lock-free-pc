@@ -1,5 +1,5 @@
-#ifndef PARALLELPC_WATCHER_H
-#define PARALLELPC_WATCHER_H
+#ifndef LOCKFREEPC_WATCHER_H
+#define LOCKFREEPC_WATCHER_H
 
 
 #include <memory>
@@ -26,4 +26,4 @@ protected:
     int _max;
 };
 
-#endif //PARALLELPC_WATCHER_H
+#endif //LOCKFREEPC_WATCHER_H
