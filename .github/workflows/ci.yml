@@ -1,0 +1,27 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Install dependencies
+      run: sudo ./install_dependencies.sh
+    - name: Compile
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make
+    - name: Show Files
+      run: ls
+    - name: Run
+      run: ./build/lockfreepc 4 tests/fixtures/cooling_house.data 0.05
+    - name: Test
+      run: tests/check_diff.sh tests/fixtures/skeleton.txt results_cooling_house_0.050000/skeleton.txt
