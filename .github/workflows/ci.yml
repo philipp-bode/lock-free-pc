@@ -22,6 +22,6 @@ jobs:
     - name: Show Files
       run: ls
     - name: Run
-      run: ./build/lockfreepc 4 tests/fixtures/cooling_house.data 0.05
+      run: ./build/src/lockfreepc 4 tests/fixtures/cooling_house.csv 0.05
     - name: Test
-      run: tests/check_diff.sh tests/fixtures/skeleton.txt results_cooling_house_0.050000/skeleton.txt
+      run: tests/check_diff.sh tests/fixtures/cooling_house_skeleton.txt results_cooling_house_0.050000/skeleton.txt
