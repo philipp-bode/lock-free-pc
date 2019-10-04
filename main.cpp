@@ -2,16 +2,15 @@
 #include <vector>
 #include <thread>
 
-#include "constraint.hpp"
-#include "worker.h"
-#include "graph.hpp"
-#include "concurrency.h"
-#include "skeleton.h"
-
+#include "boost/multi_array.hpp"
 #include "concurrentqueue/blockingconcurrentqueue.h"
 
+#include "constraint.hpp"
+#include "./worker.h"
+#include "graph.hpp"
+#include "./concurrency.h"
+#include "./skeleton.h"
 
-#define rep(a, b)   for(int a = 0; a < (b); ++a)
 
 vector<std::string> parse_header(ifstream &file_input, std::vector<std::string> &column_names) {
     std::string line;
@@ -25,6 +24,7 @@ vector<std::string> parse_header(ifstream &file_input, std::vector<std::string> 
     }
     return column_names;
 }
+
 
 vector<vector<double>> read_csv(const char *filename, std::vector<std::string> &column_names) {
     ifstream file_input(filename);
@@ -49,10 +49,10 @@ vector<vector<double>> read_csv(const char *filename, std::vector<std::string> &
     data[variables][observations] = next_val;
 
     file_input >> noskipws >>  c;
-    while (file_input.peek()!=EOF) {
-        if(c == ',') {
+    while (file_input.peek() != EOF) {
+        if (c == ',') {
             variables++;
-            if(observations == 0 ) {
+            if (observations == 0) {
                 data.push_back(std::vector<double>());
             }
         } else if (c == '\r' || c == '\n') {
@@ -69,34 +69,55 @@ vector<vector<double>> read_csv(const char *filename, std::vector<std::string> &
     data[variables].pop_back();
 
     return data;
-
 }
 
 
+arma::Mat<double> read_csv_to_mat(const char *filename, std::vector<std::string> &column_names) {
+    auto data = read_csv(filename, column_names);
 
-vector<vector<double>> read_data(const char *filename) {
-    auto file = std::freopen(filename, "r", stdin);
-    if (file == nullptr) {
-        std::cout << "Could not find file '" << filename << '\'' << std::endl;
-        exit(1);
-    }
-    int variables, observations;
-    double next_val;
+    auto nr_observations = data[1].size();
+    auto nr_variables = data.size();
 
+    arma::Mat<double> mat(nr_observations, nr_variables);
 
-    cin >> variables >> observations;
-    std::vector<std::vector<double>> data(variables, std::vector<double>(observations));
-
-    rep(o, observations) {
-        rep(v, variables) {
-            cin >> next_val;
-            data[v][o] = next_val;
-        }
+    for (int v = 0; v < (nr_variables); ++v) {
+        std::memcpy(mat.colptr(v), data[v].data(), nr_observations*sizeof(double));
     }
 
-    return data;
+    return mat;
 }
 
+
+std::shared_ptr<PCAlgorithm> run_pc(
+    arma::Mat<double> &data,
+    double alpha,
+    int nr_threads
+) {
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_graph,start_correlation,start, end_graph,end_correlation,end;
+    auto alg = make_shared<PCAlgorithm>(data.n_cols, alpha, data.n_rows, nr_threads);
+
+    set_time(start);
+    set_time(start_correlation);
+    alg->build_correlation_matrix(data);
+    set_time(end_correlation);
+
+    set_time(start_graph)
+    alg->build_graph();
+    set_time(end_graph)
+    set_time(end);
+
+    double duration = 0.0;
+    double duration_graph = 0.0;
+    double duration_correlation = 0.0;
+    add_time_to(duration, start, end)
+    add_time_to(duration_correlation, start_correlation, end_correlation)
+    add_time_to(duration_graph, start_graph, end_graph)
+    std::cout << "Total time algo: " << duration << "s" << std::endl;
+    std::cout << "Total time correlation: " << duration_correlation << "s" << std::endl;
+    std::cout << "Total time graph: " << duration_graph << "s" << std::endl;
+
+    return alg;
+}
 
 int main(int argc, char* argv[]) {
     const char *filename;
@@ -115,7 +136,7 @@ int main(int argc, char* argv[]) {
                cerr << "Invalid number " << argv[3] << '\n';
        }
     } else {
-        cout << "Usage: ./lockfreepc <number_of_threads> <filename> [alpha=0.01]" << std::endl;
+        cout << "Usage: ./lock-free-pc <number_of_threads> <filename> [alpha=0.01]" << std::endl;
         return 1;
     }
 
@@ -124,44 +145,22 @@ int main(int argc, char* argv[]) {
     cout.precision(10);
 
     string _match(filename);
-    std::vector<std::vector<double> > data;
+    arma::Mat<double> array_data;
     vector<std::string> column_names(0);
+
     if (_match.find(".csv") != std::string::npos) {
-        data = read_csv(filename, column_names);
-    } else if (_match.find(".data") != std::string::npos) {
-        data = read_data(filename);
+        array_data = read_csv_to_mat(filename, column_names);
     } else {
         std::cout << "Cannot process file '" << filename << "\'." << std::endl;
-        std::cout << "Has to be .csv or .data format." << std::endl;
+        std::cout << "Has to be .csv format." << std::endl;
 
         return 1;
     }
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_graph,start_correlation,start, end_graph,end_correlation,end;
-    auto alg = make_shared<PCAlgorithm>(data.size(), alpha, data[0].size(), nr_threads);
-
-    set_time(start);
-    set_time(start_correlation);
-    alg->build_correlation_matrix(data);
-    set_time(end_correlation);
-
-    set_time(start_graph)
-    alg->build_graph();
-    set_time(end_graph)
-    set_time(end);
-
-    alg->print_graph();
-    double duration = 0.0;
-    double duration_graph = 0.0;
-    double duration_correlation = 0.0;
-    add_time_to(duration, start, end)
-    add_time_to(duration_correlation, start_correlation, end_correlation)
-    add_time_to(duration_graph, start_graph, end_graph)
-    std::cout << "Total time algo: " << duration << "s" << std::endl;
-    std::cout << "Total time correlation: " << duration_correlation << "s" << std::endl;
-    std::cout << "Total time graph: " << duration_graph << "s" << std::endl;
+    auto alg = run_pc(array_data, alpha, nr_threads);
+    // alg->print_graph();
+    cout.flush();
 
     alg->persist_result(filename, column_names);
-    cout.flush();
     return 0;
 }

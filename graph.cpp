@@ -26,15 +26,16 @@ std::vector<int> Graph::getNeighbours(int node_id) const {
     return _adjacency_lists[node_id];
 }
 
-std::vector<std::pair<int,int> > Graph::getEdgesToTest() const {
-    std::vector<std::pair<int, int> > result;
-    for(int i = 0; i < _num_nodes; i++) {
-        for(int j = 0; j < i; j++) {
-            if(_adjacencies.at(i,j)) {
-                result.push_back(std::make_pair(i,j));
-            }
+std::vector<int> Graph::getEdges() const {
+    std::vector<int> result;
+
+    for (int i = 0; i < _num_nodes; i++) {
+        for (const auto j : _adjacency_lists[i]) {
+            result.push_back(i);
+            result.push_back(j);
         }
     }
+
     return result;
 }
 
