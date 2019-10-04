@@ -3,7 +3,6 @@
 #include <thread>
 
 #include "boost/multi_array.hpp"
-#include "concurrentqueue/blockingconcurrentqueue.h"
 
 #include "constraint.hpp"
 #include "./worker.h"

@@ -1,11 +1,8 @@
-#include "worker.h"
-#include "skeleton.h"
-
+#include "./worker.h"
 #include <set>
 #include <algorithm>
 
-#include "concurrentqueue/blockingconcurrentqueue.h"
-
+#include "./skeleton.h"
 
 Worker::Worker(
     TaskQueue t_queue,
