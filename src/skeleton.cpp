@@ -126,6 +126,10 @@ int PCAlgorithm::getNumberOfVariables() {
     return _nr_variables;
 }
 
+shared_ptr<vector<shared_ptr<vector<int>>>> PCAlgorithm::get_separation_matrix() {
+    return _separation_matrix;
+}
+
 void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &data) {
     int deleted_edges = 0;
     int n = data[0].size();

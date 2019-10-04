@@ -38,6 +38,8 @@ public:
 
     int getNumberOfVariables();
 
+    shared_ptr<vector<shared_ptr<vector<int>>>> get_separation_matrix();
+
     void build_correlation_matrix(std::vector<std::vector<double>> &data);
     void build_correlation_matrix(arma::Mat<double> &data);
     inline double test(int u, int v, std::vector<int> &S) const {

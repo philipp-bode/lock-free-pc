@@ -17,7 +17,7 @@ endif()
 
 set(SOURCE_FILES constraint.hpp constraint.cpp graph.hpp graph.cpp worker.h worker.cpp skeleton.h skeleton.cpp)
 
-add_executable(lock-free-pc main.cpp ${SOURCE_FILES})
+add_executable(lockfreepc main.cpp ${SOURCE_FILES})
 
 find_package(GSL REQUIRED)
 
@@ -32,16 +32,16 @@ include_directories(${LAPACK_INCLUDE_DIR})
 include_directories(${BLAS_INCLUDE_DIR})
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 include_directories(${BOOST_INCLUDE_DIRS})
-target_link_libraries(lock-free-pc
+target_link_libraries(lockfreepc
     pthread
     GSL::gsl
     GSL::gslcblas
     ${ARMADILLO_LIBRARIES}
 )
 
-pybind11_add_module(lockfreepc _lockfreepc.cpp ${SOURCE_FILES})
+pybind11_add_module(_lockfreepc _lockfreepc.cpp ${SOURCE_FILES})
 
-target_link_libraries(lockfreepc PRIVATE
+target_link_libraries(_lockfreepc PRIVATE
     ${ARMADILLO_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${BLAS_LIBRARIES}
