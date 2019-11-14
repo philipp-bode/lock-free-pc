@@ -100,17 +100,17 @@ std::shared_ptr<PCAlgorithm> run_pc(
     alg->build_correlation_matrix(data);
     set_time(end_correlation);
 
-    set_time(start_graph)
+    set_time(start_graph);
     alg->build_graph();
-    set_time(end_graph)
+    set_time(end_graph);
     set_time(end);
 
     double duration = 0.0;
     double duration_graph = 0.0;
     double duration_correlation = 0.0;
-    add_time_to(duration, start, end)
-    add_time_to(duration_correlation, start_correlation, end_correlation)
-    add_time_to(duration_graph, start_graph, end_graph)
+    add_time_to(duration, start, end);
+    add_time_to(duration_correlation, start_correlation, end_correlation);
+    add_time_to(duration_graph, start_graph, end_graph);
     std::cout << "Total time algo: " << duration << "s" << std::endl;
     std::cout << "Total time correlation: " << duration_correlation << "s" << std::endl;
     std::cout << "Total time graph: " << duration_graph << "s" << std::endl;

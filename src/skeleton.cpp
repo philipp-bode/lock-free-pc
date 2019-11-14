@@ -22,7 +22,7 @@ void PCAlgorithm::build_graph() {
 
     // we want to run as long as their are edges remaining to test on a higher level
     while(!nodes_to_be_tested.empty()) {
-        set_time(start_queue)
+        set_time(start_queue);
         int queue_size = 0;
         std::vector<int> nodes_to_delete(0);
         // iterate over all edges to determine if they still can be tested on this level
@@ -41,9 +41,9 @@ void PCAlgorithm::build_graph() {
             }
             // only do the independence testing if the current_node has enough neighbours do create a separation set
         }
-        set_time(end_queue)
+        set_time(end_queue);
         double duration_queue = 0.0;
-        add_time_to(duration_queue, start_queue, end_queue)
+        add_time_to(duration_queue, start_queue, end_queue);
         if(queue_size) {
             cout << "Queued all " << queue_size << " pairs, waiting for results.." << endl;
 
@@ -52,7 +52,7 @@ void PCAlgorithm::build_graph() {
             vector<shared_ptr<Worker> > workers;
             vector<shared_ptr<Statistics> > stats(_nr_threads);
 
-            set_time(start_worker)
+            set_time(start_worker);
             rep(i,_nr_threads) {
                 stats[i] = std::make_shared<Statistics>();
                 workers.push_back(make_shared<Worker>(
@@ -77,9 +77,9 @@ void PCAlgorithm::build_graph() {
             }
             watcher_thread->join();
 
-            set_time(end_worker)
+            set_time(end_worker);
             double duration_worker = 0.0;
-            add_time_to(duration_worker, start_worker, end_worker)
+            add_time_to(duration_worker, start_worker, end_worker);
 #ifdef WITH_STATS
             cout << "Duration queue fuelling: " << duration_queue << " s" << endl;
             cout << "Duration queue processing: " << duration_worker << " s" << endl;

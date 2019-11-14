@@ -26,7 +26,7 @@ public:
 
     // Write independence test results to the graph and separation set store 
     inline void update_result(int x, int y, const std::vector<int> &subset) {
-        increment_stat(_statistics->deleted_edges)
+        increment_stat(_statistics->deleted_edges);
         _working_graph->deleteEdge(x, y);
         (*_separation_matrix)[x * _alg->getNumberOfVariables() + y] =  std::make_shared<std::vector<int> >(subset);
     }
