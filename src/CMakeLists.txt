@@ -15,7 +15,7 @@ if(WITH_STATS)
     add_definitions(-DWITH_STATS)
 endif()
 
-set(SOURCE_FILES constraint.hpp constraint.cpp graph.hpp graph.cpp worker.h worker.cpp skeleton.h skeleton.cpp)
+set(SOURCE_FILES constraint.hpp constraint.cpp graph.hpp graph.cpp worker.h worker.cpp watcher.h watcher.cpp skeleton.h skeleton.cpp)
 
 add_executable(lockfreepc main.cpp ${SOURCE_FILES})
 
