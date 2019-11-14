@@ -1,11 +1,10 @@
-#include "worker.h"
-#include "skeleton.h"
-
+#include "./worker.h"
 #include <set>
 #include <algorithm>
 
-#include "concurrentqueue/blockingconcurrentqueue.h"
+#include "./skeleton.h"
 
+#include <stdexcept>
 
 Worker::Worker(
     TaskQueue t_queue,
@@ -77,7 +76,6 @@ void Worker::test_higher_order() {
     set_time(start_loop)
     while(_work_queue->try_dequeue(test)) {
         increment_stat(_statistics->dequed_elements)
-        
         vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
         bool separated = false;
 

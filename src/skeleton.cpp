@@ -1,5 +1,6 @@
 #include "skeleton.h"
 #include "worker.h"
+#include "watcher.h"
 
 PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads): _graph(std::make_shared<Graph>(vars)), _alpha(alpha), _nr_variables(vars), _nr_samples(samples), _nr_threads(numberThreads){
     _correlation = arma::Mat<double>(vars, vars, arma::fill::eye);
@@ -14,7 +15,6 @@ void PCAlgorithm::build_graph() {
     int level = 1;
     std::unordered_set<int> nodes_to_be_tested;
     for (int i = 0; i < _nr_variables; ++i) nodes_to_be_tested.insert(nodes_to_be_tested.end(), i);
-    std::vector<int> stats(_nr_threads, 0);
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start_queue, end_queue, start_worker, end_worker;
     
@@ -66,10 +66,17 @@ void PCAlgorithm::build_graph() {
                 ));
                 threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
             }
+            auto watcher = Watcher(
+                _work_queue,
+                queue_size,
+                stats);
+            auto watcher_thread = make_shared<thread>(&Watcher::watch, watcher);
 
-            for(const auto &thread : threads) {
+            for (const auto &thread : threads) {
                 thread->join();
             }
+            watcher_thread->join();
+
             set_time(end_worker)
             double duration_worker = 0.0;
             add_time_to(duration_worker, start_worker, end_worker)
@@ -113,12 +120,21 @@ void PCAlgorithm::build_graph() {
     cout << "Total independence tests made: " << total_tests << std::endl;
 }
 
+std::vector<int> PCAlgorithm::get_edges() const{
+    return _graph->getEdges();
+}
+
+
 void PCAlgorithm::print_graph() const {
     _graph->print_list();
 }
 
 int PCAlgorithm::getNumberOfVariables() {
     return _nr_variables;
+}
+
+shared_ptr<vector<shared_ptr<vector<int>>>> PCAlgorithm::get_separation_matrix() {
+    return _separation_matrix;
 }
 
 void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &data) {
@@ -136,6 +152,7 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
             _correlation(i,j) = _correlation(j,i) = pearson;
         }
     }
+
     _gauss_test = IndepTestGauss(_nr_samples,_correlation);
 
     std::vector<int> empty_sep(0);
@@ -151,6 +168,39 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
     cout << "Deleted edges: " << deleted_edges << std::endl;
     _working_graph = std::make_shared<Graph>(*_graph);
 }
+
+void PCAlgorithm::build_correlation_matrix(arma::Mat<double> &data) {
+    int deleted_edges = 0;
+
+    rep(i, _nr_variables) {
+        rep(j, i) {
+            gsl_vector_const_view gsl_x = gsl_vector_const_view_array(data.colptr(i), _nr_samples);
+            gsl_vector_const_view gsl_y = gsl_vector_const_view_array(data.colptr(j), _nr_samples);
+            double pearson = gsl_stats_correlation(
+                    gsl_x.vector.data, STRIDE,
+                    gsl_y.vector.data, STRIDE,
+                    _nr_samples
+            );
+            _correlation(i,j) = _correlation(j,i) = pearson;
+        }
+    }
+
+    _gauss_test = IndepTestGauss(_nr_samples,_correlation);
+
+    std::vector<int> empty_sep(0);
+    rep(i, _nr_variables) {
+        rep(j, i) {
+            auto pearson = _gauss_test.test(i, j, empty_sep);
+            if(pearson >= _alpha) {
+                deleted_edges += 2;
+                _graph->deleteEdge(i,j);
+            }
+        }
+    }
+    cout << "Deleted edges: " << deleted_edges << std::endl;
+    _working_graph = std::make_shared<Graph>(*_graph);
+}
+
 
 void PCAlgorithm::persist_result(
     const std::string data_name,
@@ -192,7 +242,6 @@ void PCAlgorithm::persist_result(
     }
 
     // Save correlation matrix
-    _correlation.save(dir_name + "corr.csv" , arma::csv_ascii);
 
     // Save separation set information
     ofstream sepset_file;

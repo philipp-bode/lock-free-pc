@@ -6,15 +6,15 @@
 #include <vector>
 
 #include "concurrency.h"
-#include "skeleton.h"
 
 
 
 class Watcher {
 public:
     Watcher(
-        std::vector<int> *stats,
-        int max
+        TaskQueue t_queue,
+        int max,
+        std::vector<std::shared_ptr<Statistics> >& stats
     );
 
     void watch();
@@ -22,8 +22,9 @@ public:
     void set_max(int new_max);
 
 protected:
-    std::vector<int> *_stats;
+    TaskQueue _t_queue;
     int _max;
+    std::vector<std::shared_ptr<Statistics> >& _stats;
 };
 
 #endif //LOCKFREEPC_WATCHER_H

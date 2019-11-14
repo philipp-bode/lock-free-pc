@@ -20,7 +20,7 @@ public:
     void updateNeighbours();
     int getNumberOfNodes();
 
-    std::vector<std::pair<int,int>> getEdgesToTest() const;
+    std::vector<int> getEdges() const;
     void print_list() const;
     void print_mat() const;
 

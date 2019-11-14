@@ -20,6 +20,7 @@
 
 #include "concurrency.h"
 #include "constraint.hpp"
+#include "boost/multi_array.hpp"
 
 
 using namespace std;
@@ -33,10 +34,14 @@ public:
 
     void print_graph() const;
 
+    std::vector<int> get_edges() const;
+
     int getNumberOfVariables();
 
-    void build_correlation_matrix(std::vector<std::vector<double>> &data);
+    shared_ptr<vector<shared_ptr<vector<int>>>> get_separation_matrix();
 
+    void build_correlation_matrix(std::vector<std::vector<double>> &data);
+    void build_correlation_matrix(arma::Mat<double> &data);
     inline double test(int u, int v, std::vector<int> &S) const {
         return _gauss_test.test(u,v,S);
     }
@@ -52,7 +57,7 @@ protected:
     int _nr_variables;
     int _nr_samples;
     int _nr_threads;
-    arma::Mat<double>_correlation;
+    arma::Mat<double> _correlation;
     shared_ptr<Graph> _graph;
     shared_ptr<Graph> _working_graph;
     shared_ptr<vector<shared_ptr<vector<int>>>> _separation_matrix;
