@@ -54,7 +54,7 @@ void PCAlgorithm::build_graph() {
             std::cout << "Queued all " << queue_size << " pairs, waiting for results.." << std::endl;
 
             std::vector<std::shared_ptr<std::thread>> threads;
-            // we could think of making this a member variable and create the workers once and only the threads if they are needed
+            // TODO(Anyone): Worker instances could be created only once and updated with current level.
             std::vector<std::shared_ptr<Worker>> workers;
             std::vector<std::shared_ptr<Statistics>> stats(_nr_threads);
 
@@ -83,19 +83,13 @@ void PCAlgorithm::build_graph() {
             double tests_total = 0.0;
             double elements_total = 0.0;
             for (int i = 0; i < _nr_threads; i++) {
-                // std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "
-                //           << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl;
-                // std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000 << " ms for all tests and "
-                //           << stats[i]->sum_time_queue_element*1000 << " ms for all queued elements in total" << std::endl;
-                // std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000/stats[i]->test_count << " ms per test on average and "
-                //           << stats[i]->sum_time_queue_element*1000/stats[i]->dequed_elements << " ms per queue element on average" << std::endl;
                 total_tests += stats[i]->test_count;
                 tests_total += stats[i]->sum_time_gaus;
                 elements_total += stats[i]->sum_time_queue_element;
             }
 
-            std::cout << "Total time for tests " << tests_total << "s and total time for all workers: " << elements_total
-                 << "s." << std::endl;
+            std::cout << "Total time for tests " << tests_total
+                      << "s and total time for all workers: " << elements_total << "s." << std::endl;
             std::cout << "Percentage tests: " << (tests_total / elements_total) * 100.0 << "%." << std::endl;
 
 #endif
@@ -123,7 +117,9 @@ void PCAlgorithm::print_graph() const { _graph->print_list(); }
 
 int PCAlgorithm::getNumberOfVariables() { return _nr_variables; }
 
-std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> PCAlgorithm::get_separation_matrix() { return _separation_matrix; }
+std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> PCAlgorithm::get_separation_matrix() {
+    return _separation_matrix;
+}
 
 void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>>& data) {
     int deleted_edges = 0;

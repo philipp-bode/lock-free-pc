@@ -8,7 +8,8 @@
 #if WITH_STATS
 #define increment_stat(x) x += 1;
 #define set_time(x) x = std::chrono::high_resolution_clock::now();
-#define add_time_to(x, start, stop) x += std::chrono::duration_cast<std::chrono::duration<double>>(stop - start).count();
+#define add_time_to(x, start, stop) \
+    x += std::chrono::duration_cast<std::chrono::duration<double>>(stop - start).count();
 #else
 #define increment_stat(x)
 #define set_time(x)

@@ -6,7 +6,6 @@
 
 #include "skeleton.hpp"
 
-
 Worker::Worker(
     TaskQueue t_queue,
     std::shared_ptr<PCAlgorithm> alg,

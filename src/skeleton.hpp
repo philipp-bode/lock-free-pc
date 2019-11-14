@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "armadillo"
+#include "boost/multi_array.hpp"
 #include "gsl/gsl_statistics.h"
 #include "gsl/gsl_vector.h"
-#include "boost/multi_array.hpp"
 
 #include "concurrency.hpp"
 #include "constraint.hpp"
