@@ -15,7 +15,7 @@
 // -------------
 
 std::shared_ptr<PCAlgorithm> run_pc(arma::Mat<double>& data, double alpha, int nr_threads) {
-    auto alg = make_shared<PCAlgorithm>(data.n_cols, alpha, data.n_rows, nr_threads);
+    auto alg = std::make_shared<PCAlgorithm>(data.n_cols, alpha, data.n_rows, nr_threads);
 
     auto colp = data.colptr(0);
 

@@ -2,27 +2,24 @@
 
 #define rep(a, b) for (int a = 0; a < (b); ++a)
 
-#include "graph.hpp"
-
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
-#include <gsl/gsl_statistics.h>
-#include <gsl/gsl_vector.h>
-
-#include <armadillo>
-
+#include "armadillo"
+#include "gsl/gsl_statistics.h"
+#include "gsl/gsl_vector.h"
 #include "boost/multi_array.hpp"
+
 #include "concurrency.hpp"
 #include "constraint.hpp"
+#include "graph.hpp"
 
-using namespace std;
-
-class PCAlgorithm : public enable_shared_from_this<PCAlgorithm> {
+class PCAlgorithm : public std::enable_shared_from_this<PCAlgorithm> {
  public:
     PCAlgorithm(int vars, double alpha, int samples, int numberThreads);
     double _alpha;
@@ -34,7 +31,7 @@ class PCAlgorithm : public enable_shared_from_this<PCAlgorithm> {
 
     int getNumberOfVariables();
 
-    shared_ptr<vector<shared_ptr<vector<int>>>> get_separation_matrix();
+    std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> get_separation_matrix();
 
     void build_correlation_matrix(std::vector<std::vector<double>>& data);
     void build_correlation_matrix(arma::Mat<double>& data);
@@ -50,12 +47,12 @@ class PCAlgorithm : public enable_shared_from_this<PCAlgorithm> {
     int _nr_samples;
     int _nr_threads;
     arma::Mat<double> _correlation;
-    shared_ptr<Graph> _graph;
-    shared_ptr<Graph> _working_graph;
-    shared_ptr<vector<shared_ptr<vector<int>>>> _separation_matrix;
+    std::shared_ptr<Graph> _graph;
+    std::shared_ptr<Graph> _working_graph;
+    std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> _separation_matrix;
 
-    void print_vector(const vector<int>& S) const {
-        for (auto s : S) cout << s << " ";
-        cout << endl;
+    void print_vector(const std::vector<int>& S) const {
+        for (auto s : S) std::cout << s << " ";
+        std::cout << std::endl;
     }
 };

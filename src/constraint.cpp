@@ -7,13 +7,14 @@
 #include "constraint.hpp"
 
 #include <algorithm>
-#include <boost/dynamic_bitset.hpp>
-#include <boost/math/distributions/normal.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
-#include <boost/math/special_functions/log1p.hpp>
 #include <iterator>
 #include <limits>
 #include <utility>
+
+#include "boost/dynamic_bitset.hpp"
+#include "boost/math/distributions/normal.hpp"
+#include "boost/math/special_functions/fpclassify.hpp"
+#include "boost/math/special_functions/log1p.hpp"
 
 double IndepTestGauss::test(int u, int v, std::vector<int>& S) const {
     // Return NaN if any of the correlation coefficients needed for calculation is NaN
@@ -31,16 +32,14 @@ double IndepTestGauss::test(int u, int v, std::vector<int>& S) const {
 // Calculate (absolute value of) z statistic
 #define CUT_THR 0.9999999
     double r, absz;
-    //dout.level(3) << " Performing independence test for conditioning set of size " << S.size() << std::endl;
-    if (S.empty())
+    if (S.empty()) {
         r = _correlation(u, v);
-    else if (S.size() == 1)
+    } else if (S.size() == 1) {
         r = (C_sub(0, 1) - C_sub(0, 2) * C_sub(1, 2)) /
             sqrt((1 - C_sub(1, 2) * C_sub(1, 2)) * (1 - C_sub(0, 2) * C_sub(0, 2)));
-    else {
+    } else {
         arma::mat PM;
         pinv(PM, C_sub);
-        // TODO include error handling
         r = -PM(0, 1) / sqrt(PM(0, 0) * PM(1, 1));
     }
     // Absolute value of r, respect cut threshold

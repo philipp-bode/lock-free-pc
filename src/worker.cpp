@@ -1,14 +1,15 @@
 #include "worker.hpp"
+
 #include <algorithm>
 #include <set>
+#include <stdexcept>
 
 #include "skeleton.hpp"
 
-#include <stdexcept>
 
 Worker::Worker(
     TaskQueue t_queue,
-    shared_ptr<PCAlgorithm> alg,
+    std::shared_ptr<PCAlgorithm> alg,
     int level,
     std::shared_ptr<Graph> graph,
     std::shared_ptr<Graph> working_graph,
@@ -29,8 +30,8 @@ void Worker::test_single_conditional() {
     set_time(start_loop);
     while (_work_queue->try_dequeue(test)) {
         increment_stat(_statistics->dequed_elements);
-        vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
-        vector<int> sep(1);
+        std::vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
+        std::vector<int> sep(1);
         bool separated = false;
 
         for (auto const neighbour : adjX) {
@@ -48,7 +49,7 @@ void Worker::test_single_conditional() {
         }
 
         if (!separated) {
-            vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
+            std::vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
             for (auto const neighbour : adjY) {
                 sep[0] = neighbour;
                 set_time(start_gauss);
@@ -75,7 +76,7 @@ void Worker::test_higher_order() {
     set_time(start_loop);
     while (_work_queue->try_dequeue(test)) {
         increment_stat(_statistics->dequed_elements);
-        vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
+        std::vector<int> adjX = _graph->getNeighboursWithout(test.X, test.Y);
         bool separated = false;
 
         size_t num_elementsX = adjX.size();
@@ -110,7 +111,7 @@ void Worker::test_higher_order() {
             } while (std::next_permutation(maskX.begin(), maskX.end()));
         }
 
-        vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
+        std::vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
 
         size_t num_elements = adjY.size();
         if (!separated && num_elements >= _level) {

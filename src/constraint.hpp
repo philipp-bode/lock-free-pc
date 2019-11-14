@@ -5,8 +5,9 @@
  */
 #pragma once
 
-#include <armadillo>
 #include <vector>
+
+#include "armadillo"
 
 /**
  * Virtual base class for conditional independence tests

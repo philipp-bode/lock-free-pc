@@ -1,4 +1,5 @@
 #include "skeleton.hpp"
+
 #include "watcher.hpp"
 #include "worker.hpp"
 
@@ -16,14 +17,14 @@ PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
 }
 
 void PCAlgorithm::build_graph() {
-    long total_tests = 0;
+    int64_t total_tests = 0;
     int level = 1;
     std::unordered_set<int> nodes_to_be_tested;
     for (int i = 0; i < _nr_variables; ++i) nodes_to_be_tested.insert(nodes_to_be_tested.end(), i);
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start_queue, end_queue, start_worker, end_worker;
 
-    cout << "Starting to fill test_queue" << endl;
+    std::cout << "Starting to fill test_queue" << std::endl;
 
     // we want to run as long as their are edges remaining to test on a higher level
     while (!nodes_to_be_tested.empty()) {
@@ -50,23 +51,23 @@ void PCAlgorithm::build_graph() {
         double duration_queue = 0.0;
         add_time_to(duration_queue, start_queue, end_queue);
         if (queue_size) {
-            cout << "Queued all " << queue_size << " pairs, waiting for results.." << endl;
+            std::cout << "Queued all " << queue_size << " pairs, waiting for results.." << std::endl;
 
-            vector<shared_ptr<thread>> threads;
+            std::vector<std::shared_ptr<std::thread>> threads;
             // we could think of making this a member variable and create the workers once and only the threads if they are needed
-            vector<shared_ptr<Worker>> workers;
-            vector<shared_ptr<Statistics>> stats(_nr_threads);
+            std::vector<std::shared_ptr<Worker>> workers;
+            std::vector<std::shared_ptr<Statistics>> stats(_nr_threads);
 
             set_time(start_worker);
             rep(i, _nr_threads) {
                 stats[i] = std::make_shared<Statistics>();
                 workers.push_back(
-                    make_shared<Worker>(
+                    std::make_shared<Worker>(
                         _work_queue, shared_from_this(), level, _graph, _working_graph, _separation_matrix, stats[i]));
-                threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
+                threads.push_back(std::make_shared<std::thread>(&Worker::execute_test, *workers[i]));
             }
             auto watcher = Watcher(_work_queue, queue_size, stats);
-            auto watcher_thread = make_shared<thread>(&Watcher::watch, watcher);
+            auto watcher_thread = std::make_shared<std::thread>(&Watcher::watch, watcher);
 
             for (const auto& thread : threads) {
                 thread->join();
@@ -77,8 +78,8 @@ void PCAlgorithm::build_graph() {
             double duration_worker = 0.0;
             add_time_to(duration_worker, start_worker, end_worker);
 #ifdef WITH_STATS
-            cout << "Duration queue fuelling: " << duration_queue << " s" << endl;
-            cout << "Duration queue processing: " << duration_worker << " s" << endl;
+            std::cout << "Duration queue fuelling: " << duration_queue << " s" << std::endl;
+            std::cout << "Duration queue processing: " << duration_worker << " s" << std::endl;
             double tests_total = 0.0;
             double elements_total = 0.0;
             for (int i = 0; i < _nr_threads; i++) {
@@ -93,15 +94,15 @@ void PCAlgorithm::build_graph() {
                 elements_total += stats[i]->sum_time_queue_element;
             }
 
-            cout << "Total time for tests " << tests_total << "s and total time for all workers: " << elements_total
-                 << "s." << endl;
-            cout << "Percentage tests: " << (tests_total / elements_total) * 100.0 << "%." << endl;
+            std::cout << "Total time for tests " << tests_total << "s and total time for all workers: " << elements_total
+                 << "s." << std::endl;
+            std::cout << "Percentage tests: " << (tests_total / elements_total) * 100.0 << "%." << std::endl;
 
 #endif
-            cout << "All tests done for level " << level << '.' << endl;
+            std::cout << "All tests done for level " << level << '.' << std::endl;
             stats.resize(0);
         } else {
-            cout << "No tests left for level " << level << '.' << endl;
+            std::cout << "No tests left for level " << level << '.' << std::endl;
             _graph = std::make_shared<Graph>(*_working_graph);
             break;
         }
@@ -113,7 +114,7 @@ void PCAlgorithm::build_graph() {
         level++;
     }
 
-    cout << "Total independence tests made: " << total_tests << std::endl;
+    std::cout << "Total independence tests made: " << total_tests << std::endl;
 }
 
 std::vector<int> PCAlgorithm::get_edges() const { return _graph->getEdges(); }
@@ -122,7 +123,7 @@ void PCAlgorithm::print_graph() const { _graph->print_list(); }
 
 int PCAlgorithm::getNumberOfVariables() { return _nr_variables; }
 
-shared_ptr<vector<shared_ptr<vector<int>>>> PCAlgorithm::get_separation_matrix() { return _separation_matrix; }
+std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> PCAlgorithm::get_separation_matrix() { return _separation_matrix; }
 
 void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>>& data) {
     int deleted_edges = 0;
@@ -148,7 +149,7 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>>& dat
             }
         }
     }
-    cout << "Deleted edges: " << deleted_edges << std::endl;
+    std::cout << "Deleted edges: " << deleted_edges << std::endl;
     _working_graph = std::make_shared<Graph>(*_graph);
 }
 
@@ -176,7 +177,7 @@ void PCAlgorithm::build_correlation_matrix(arma::Mat<double>& data) {
             }
         }
     }
-    cout << "Deleted edges: " << deleted_edges << std::endl;
+    std::cout << "Deleted edges: " << deleted_edges << std::endl;
     _working_graph = std::make_shared<Graph>(*_graph);
 }
 
@@ -197,14 +198,14 @@ void PCAlgorithm::persist_result(const std::string data_name, const std::vector<
     int exit_code = system(("mkdir -p " + dir_name).c_str());
 
     // Save nodes
-    ofstream node_file;
+    std::ofstream node_file;
     node_file.open(dir_name + "nodes.txt");
     for (const auto c : column_names) {
         node_file << c << std::endl;
     }
 
     // Save graph
-    ofstream graph_file;
+    std::ofstream graph_file;
     graph_file.open(dir_name + "skeleton.txt");
 
     for (int i = 0; i < _correlation.n_rows; i++) {
@@ -216,7 +217,7 @@ void PCAlgorithm::persist_result(const std::string data_name, const std::vector<
     // Save correlation matrix
 
     // Save separation set information
-    ofstream sepset_file;
+    std::ofstream sepset_file;
     sepset_file.open(dir_name + "sepset.txt");
 
     rep(i, _nr_variables) {

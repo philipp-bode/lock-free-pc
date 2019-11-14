@@ -1,13 +1,14 @@
 #pragma once
 
-#include <armadillo>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "armadillo"
+
 class Graph {
  public:
-    Graph(int num_nodes);
+    explicit Graph(int num_nodes);
     Graph(Graph& g);
 
     void deleteEdge(int node_x, int node_y);
