@@ -1,5 +1,7 @@
+#!/bin/bash
+
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-    if [[ -f /etc/debian_version ]];then
+    if [[ -f /etc/lsb-release ]];then
         apt-get update -qq
         apt-get install -qq libgsl0-dev libarmadillo-dev libboost-all-dev
     elif [[ -f /etc/centos-release ]]; then
