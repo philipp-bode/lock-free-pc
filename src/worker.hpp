@@ -7,7 +7,7 @@
 #include "skeleton.hpp"
 
 class Worker {
-   public:
+ public:
     Worker(
         TaskQueue t_queue,
         std::shared_ptr<PCAlgorithm> alg,
@@ -30,7 +30,7 @@ class Worker {
     void test_single_conditional();
     void test_higher_order();
 
-   protected:
+ protected:
     TaskQueue _work_queue;
     std::shared_ptr<PCAlgorithm> _alg;
     int _level;

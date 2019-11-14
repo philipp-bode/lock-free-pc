@@ -12,7 +12,7 @@
  * Virtual base class for conditional independence tests
  */
 class IndepTest {
-   public:
+ public:
     /**
      * Virtual destructor
      *
@@ -35,14 +35,14 @@ class IndepTest {
  * Conditional independence test for Gaussian data
  */
 class IndepTestGauss : public IndepTest {
-   protected:
+ protected:
     /**
      * Sufficient statistic for easier access in independence test
      */
     int _sampleSize;
     arma::mat _correlation;
 
-   public:
+ public:
     IndepTestGauss() = default;
 
     IndepTestGauss(int sampleSize, arma::Mat<double>& cor) : _sampleSize(sampleSize), _correlation(cor) {}

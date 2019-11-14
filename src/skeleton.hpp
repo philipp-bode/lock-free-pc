@@ -23,7 +23,7 @@
 using namespace std;
 
 class PCAlgorithm : public enable_shared_from_this<PCAlgorithm> {
-   public:
+ public:
     PCAlgorithm(int vars, double alpha, int samples, int numberThreads);
     double _alpha;
     void build_graph();
@@ -42,7 +42,7 @@ class PCAlgorithm : public enable_shared_from_this<PCAlgorithm> {
 
     void persist_result(const std::string data_name, const std::vector<std::string>& column_names);
 
-   protected:
+ protected:
     TaskQueue _work_queue;
     IndepTestGauss _gauss_test;
     const int STRIDE = 1;

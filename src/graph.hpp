@@ -6,7 +6,7 @@
 #include <vector>
 
 class Graph {
-   public:
+ public:
     Graph(int num_nodes);
     Graph(Graph& g);
 
@@ -24,7 +24,7 @@ class Graph {
     void print_list() const;
     void print_mat() const;
 
-   protected:
+ protected:
     arma::Mat<uint8_t> _adjacencies;
     std::vector<std::vector<int>> _adjacency_lists;
     int _num_nodes;
