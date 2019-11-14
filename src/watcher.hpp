@@ -1,11 +1,9 @@
-#ifndef LOCKFREEPC_WATCHER_H
-#define LOCKFREEPC_WATCHER_H
-
+#pragma once
 
 #include <memory>
 #include <vector>
 
-#include "concurrency.h"
+#include "concurrency.hpp"
 
 
 
@@ -26,5 +24,3 @@ protected:
     int _max;
     std::vector<std::shared_ptr<Statistics> >& _stats;
 };
-
-#endif //LOCKFREEPC_WATCHER_H

@@ -7,9 +7,9 @@
 
 #include "constraint.hpp"
 #include "graph.hpp"
-#include "./worker.h"
-#include "./concurrency.h"
-#include "./skeleton.h"
+#include "worker.hpp"
+#include "concurrency.hpp"
+#include "skeleton.hpp"
 
 
 // -------------

@@ -1,12 +1,10 @@
-#ifndef LOCKFREEPC_WORKER_H
-#define LOCKFREEPC_WORKER_H
-
+#pragma once
 
 #include <memory>
 #include <vector>
 
-#include "concurrency.h"
-#include "skeleton.h"
+#include "concurrency.hpp"
+#include "skeleton.hpp"
 
 
 
@@ -44,5 +42,3 @@ protected:
     std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> _separation_matrix;
     std::shared_ptr<Statistics> _statistics;
 };
-
-#endif //LOCKFREEPC_WORKER_H

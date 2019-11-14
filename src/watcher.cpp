@@ -1,4 +1,4 @@
-#include "./watcher.h"
+#include "watcher.hpp"
 
 #include <unistd.h>
 #include <stdio.h>

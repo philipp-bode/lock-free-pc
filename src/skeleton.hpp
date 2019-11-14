@@ -1,6 +1,4 @@
-#ifndef LOCKFREEPC_SKELETON_H
-#define LOCKFREEPC_SKELETON_H
-
+#pragma once 
 
 #define rep(a, b)   for(int a = 0; a < (b); ++a)
 
@@ -18,7 +16,7 @@
 
 #include <armadillo>
 
-#include "concurrency.h"
+#include "concurrency.hpp"
 #include "constraint.hpp"
 #include "boost/multi_array.hpp"
 
@@ -68,5 +66,3 @@ protected:
         cout << endl;
     }
 };
-
-#endif //LOCKFREEPC_SKELETON_H

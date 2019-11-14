@@ -1,6 +1,6 @@
-#include "skeleton.h"
-#include "worker.h"
-#include "watcher.h"
+#include "skeleton.hpp"
+#include "worker.hpp"
+#include "watcher.hpp"
 
 PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads): _graph(std::make_shared<Graph>(vars)), _alpha(alpha), _nr_variables(vars), _nr_samples(samples), _nr_threads(numberThreads){
     _correlation = arma::Mat<double>(vars, vars, arma::fill::eye);

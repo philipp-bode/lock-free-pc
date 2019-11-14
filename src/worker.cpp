@@ -1,8 +1,8 @@
-#include "./worker.h"
+#include "worker.hpp"
 #include <set>
 #include <algorithm>
 
-#include "./skeleton.h"
+#include "skeleton.hpp"
 
 #include <stdexcept>
 

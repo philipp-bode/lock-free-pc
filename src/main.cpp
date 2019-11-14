@@ -5,10 +5,10 @@
 #include "boost/multi_array.hpp"
 
 #include "constraint.hpp"
-#include "./worker.h"
+#include "worker.hpp"
 #include "graph.hpp"
-#include "./concurrency.h"
-#include "./skeleton.h"
+#include "concurrency.hpp"
+#include "skeleton.hpp"
 
 
 vector<std::string> parse_header(ifstream &file_input, std::vector<std::string> &column_names) {
