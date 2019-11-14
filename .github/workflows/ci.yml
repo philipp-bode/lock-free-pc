@@ -25,3 +25,16 @@ jobs:
       run: ./build/src/lockfreepc 4 tests/fixtures/cooling_house.csv 0.05
     - name: Test
       run: tests/check_diff.sh tests/fixtures/cooling_house_skeleton.txt results_cooling_house_0.050000/skeleton.txt
+
+  lint:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Install cpplint
+      run: pip install cpplint
+
+    - name: Lint
+      run: ./lint.sh
