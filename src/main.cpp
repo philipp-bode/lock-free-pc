@@ -1,17 +1,16 @@
 #include <iostream>
-#include <vector>
 #include <thread>
+#include <vector>
 
 #include "boost/multi_array.hpp"
 
-#include "constraint.hpp"
-#include "worker.hpp"
-#include "graph.hpp"
 #include "concurrency.hpp"
+#include "constraint.hpp"
+#include "graph.hpp"
 #include "skeleton.hpp"
+#include "worker.hpp"
 
-
-vector<std::string> parse_header(ifstream &file_input, std::vector<std::string> &column_names) {
+vector<std::string> parse_header(ifstream& file_input, std::vector<std::string>& column_names) {
     std::string line;
     std::getline(file_input, line);
 
@@ -24,8 +23,7 @@ vector<std::string> parse_header(ifstream &file_input, std::vector<std::string> 
     return column_names;
 }
 
-
-vector<vector<double>> read_csv(const char *filename, std::vector<std::string> &column_names) {
+vector<vector<double>> read_csv(const char* filename, std::vector<std::string>& column_names) {
     ifstream file_input(filename);
     if (!file_input.is_open()) {
         std::cout << "Could not find file '" << filename << '\'' << std::endl;
@@ -47,7 +45,7 @@ vector<vector<double>> read_csv(const char *filename, std::vector<std::string> &
 
     data[variables][observations] = next_val;
 
-    file_input >> noskipws >>  c;
+    file_input >> noskipws >> c;
     while (file_input.peek() != EOF) {
         if (c == ',') {
             variables++;
@@ -70,8 +68,7 @@ vector<vector<double>> read_csv(const char *filename, std::vector<std::string> &
     return data;
 }
 
-
-arma::Mat<double> read_csv_to_mat(const char *filename, std::vector<std::string> &column_names) {
+arma::Mat<double> read_csv_to_mat(const char* filename, std::vector<std::string>& column_names) {
     auto data = read_csv(filename, column_names);
 
     auto nr_observations = data[1].size();
@@ -80,19 +77,15 @@ arma::Mat<double> read_csv_to_mat(const char *filename, std::vector<std::string>
     arma::Mat<double> mat(nr_observations, nr_variables);
 
     for (int v = 0; v < (nr_variables); ++v) {
-        std::memcpy(mat.colptr(v), data[v].data(), nr_observations*sizeof(double));
+        std::memcpy(mat.colptr(v), data[v].data(), nr_observations * sizeof(double));
     }
 
     return mat;
 }
 
-
-std::shared_ptr<PCAlgorithm> run_pc(
-    arma::Mat<double> &data,
-    double alpha,
-    int nr_threads
-) {
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_graph,start_correlation,start, end_graph,end_correlation,end;
+std::shared_ptr<PCAlgorithm> run_pc(arma::Mat<double>& data, double alpha, int nr_threads) {
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_graph, start_correlation, start, end_graph,
+        end_correlation, end;
     auto alg = make_shared<PCAlgorithm>(data.n_cols, alpha, data.n_rows, nr_threads);
 
     set_time(start);
@@ -119,21 +112,18 @@ std::shared_ptr<PCAlgorithm> run_pc(
 }
 
 int main(int argc, char* argv[]) {
-    const char *filename;
+    const char* filename;
     int nr_threads;
     double alpha = 0.01;
 
-
     if (argc == 3 || argc == 4) {
         istringstream s1(argv[1]);
-        if (!(s1 >> nr_threads))
-            cerr << "Invalid number " << argv[1] << '\n';
-       filename = argv[2];
-       if (argc == 4) {
-           istringstream s2(argv[3]);
-           if (!(s2 >> alpha))
-               cerr << "Invalid number " << argv[3] << '\n';
-       }
+        if (!(s1 >> nr_threads)) cerr << "Invalid number " << argv[1] << '\n';
+        filename = argv[2];
+        if (argc == 4) {
+            istringstream s2(argv[3]);
+            if (!(s2 >> alpha)) cerr << "Invalid number " << argv[3] << '\n';
+        }
     } else {
         cout << "Usage: ./lock-free-pc <number_of_threads> <filename> [alpha=0.01]" << std::endl;
         return 1;

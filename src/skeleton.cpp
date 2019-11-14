@@ -1,36 +1,41 @@
 #include "skeleton.hpp"
-#include "worker.hpp"
 #include "watcher.hpp"
+#include "worker.hpp"
 
-PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads): _graph(std::make_shared<Graph>(vars)), _alpha(alpha), _nr_variables(vars), _nr_samples(samples), _nr_threads(numberThreads){
+PCAlgorithm::PCAlgorithm(int vars, double alpha, int samples, int numberThreads)
+    : _graph(std::make_shared<Graph>(vars)),
+      _alpha(alpha),
+      _nr_variables(vars),
+      _nr_samples(samples),
+      _nr_threads(numberThreads) {
     _correlation = arma::Mat<double>(vars, vars, arma::fill::eye);
-    _gauss_test = IndepTestGauss(_nr_samples,_correlation);
-    _work_queue = std::make_shared<moodycamel::ConcurrentQueue<TestInstruction> >();
-    _separation_matrix = std::make_shared<std::vector<std::shared_ptr<std::vector<int>>>>(_nr_variables*_nr_variables, nullptr);
+    _gauss_test = IndepTestGauss(_nr_samples, _correlation);
+    _work_queue = std::make_shared<moodycamel::ConcurrentQueue<TestInstruction>>();
+    _separation_matrix =
+        std::make_shared<std::vector<std::shared_ptr<std::vector<int>>>>(_nr_variables * _nr_variables, nullptr);
 }
 
 void PCAlgorithm::build_graph() {
-
     long total_tests = 0;
     int level = 1;
     std::unordered_set<int> nodes_to_be_tested;
     for (int i = 0; i < _nr_variables; ++i) nodes_to_be_tested.insert(nodes_to_be_tested.end(), i);
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start_queue, end_queue, start_worker, end_worker;
-    
+
     cout << "Starting to fill test_queue" << endl;
 
     // we want to run as long as their are edges remaining to test on a higher level
-    while(!nodes_to_be_tested.empty()) {
+    while (!nodes_to_be_tested.empty()) {
         set_time(start_queue);
         int queue_size = 0;
         std::vector<int> nodes_to_delete(0);
         // iterate over all edges to determine if they still can be tested on this level
         for (int x : nodes_to_be_tested) {
-            if(_graph->getNeighbourCount(x)-1 >= level) {
+            if (_graph->getNeighbourCount(x) - 1 >= level) {
                 auto adj = _graph->getNeighbours(x);
-                for (int &y : adj) {
-                    if(y < x || _graph->getNeighbourCount(y)-1 < level) {
+                for (int& y : adj) {
+                    if (y < x || _graph->getNeighbourCount(y) - 1 < level) {
                         _work_queue->enqueue(TestInstruction{x, y});
                         queue_size++;
                     }
@@ -44,35 +49,26 @@ void PCAlgorithm::build_graph() {
         set_time(end_queue);
         double duration_queue = 0.0;
         add_time_to(duration_queue, start_queue, end_queue);
-        if(queue_size) {
+        if (queue_size) {
             cout << "Queued all " << queue_size << " pairs, waiting for results.." << endl;
 
-            vector<shared_ptr<thread> > threads;
+            vector<shared_ptr<thread>> threads;
             // we could think of making this a member variable and create the workers once and only the threads if they are needed
-            vector<shared_ptr<Worker> > workers;
-            vector<shared_ptr<Statistics> > stats(_nr_threads);
+            vector<shared_ptr<Worker>> workers;
+            vector<shared_ptr<Statistics>> stats(_nr_threads);
 
             set_time(start_worker);
-            rep(i,_nr_threads) {
+            rep(i, _nr_threads) {
                 stats[i] = std::make_shared<Statistics>();
-                workers.push_back(make_shared<Worker>(
-                    _work_queue,
-                    shared_from_this(),
-                    level,
-                    _graph,
-                    _working_graph,
-                    _separation_matrix,
-                    stats[i]
-                ));
+                workers.push_back(
+                    make_shared<Worker>(
+                        _work_queue, shared_from_this(), level, _graph, _working_graph, _separation_matrix, stats[i]));
                 threads.push_back(make_shared<thread>(&Worker::execute_test, *workers[i]));
             }
-            auto watcher = Watcher(
-                _work_queue,
-                queue_size,
-                stats);
+            auto watcher = Watcher(_work_queue, queue_size, stats);
             auto watcher_thread = make_shared<thread>(&Watcher::watch, watcher);
 
-            for (const auto &thread : threads) {
+            for (const auto& thread : threads) {
                 thread->join();
             }
             watcher_thread->join();
@@ -85,7 +81,7 @@ void PCAlgorithm::build_graph() {
             cout << "Duration queue processing: " << duration_worker << " s" << endl;
             double tests_total = 0.0;
             double elements_total = 0.0;
-            for(int i = 0; i < _nr_threads; i++) {
+            for (int i = 0; i < _nr_threads; i++) {
                 // std::cout << "Thread " << i << ": " << stats[i]->dequed_elements << " dequed elements, "
                 //           << stats[i]->deleted_edges << " deleted edges and " << stats[i]->test_count << " tests." << std::endl;
                 // std::cout << "Thread " << i << ": " << stats[i]->sum_time_gaus*1000 << " ms for all tests and "
@@ -97,8 +93,9 @@ void PCAlgorithm::build_graph() {
                 elements_total += stats[i]->sum_time_queue_element;
             }
 
-            cout << "Total time for tests " << tests_total << "s and total time for all workers: " << elements_total << "s." << endl;
-            cout << "Percentage tests: " << (tests_total/elements_total)*100.0 << "%." << endl;
+            cout << "Total time for tests " << tests_total << "s and total time for all workers: " << elements_total
+                 << "s." << endl;
+            cout << "Percentage tests: " << (tests_total / elements_total) * 100.0 << "%." << endl;
 
 #endif
             cout << "All tests done for level " << level << '.' << endl;
@@ -108,9 +105,8 @@ void PCAlgorithm::build_graph() {
             _graph = std::make_shared<Graph>(*_working_graph);
             break;
         }
-        
-        
-        for(const auto node: nodes_to_delete) {
+
+        for (const auto node : nodes_to_delete) {
             nodes_to_be_tested.erase(node);
         }
         _graph = std::make_shared<Graph>(*_working_graph);
@@ -120,48 +116,35 @@ void PCAlgorithm::build_graph() {
     cout << "Total independence tests made: " << total_tests << std::endl;
 }
 
-std::vector<int> PCAlgorithm::get_edges() const{
-    return _graph->getEdges();
-}
+std::vector<int> PCAlgorithm::get_edges() const { return _graph->getEdges(); }
 
+void PCAlgorithm::print_graph() const { _graph->print_list(); }
 
-void PCAlgorithm::print_graph() const {
-    _graph->print_list();
-}
+int PCAlgorithm::getNumberOfVariables() { return _nr_variables; }
 
-int PCAlgorithm::getNumberOfVariables() {
-    return _nr_variables;
-}
+shared_ptr<vector<shared_ptr<vector<int>>>> PCAlgorithm::get_separation_matrix() { return _separation_matrix; }
 
-shared_ptr<vector<shared_ptr<vector<int>>>> PCAlgorithm::get_separation_matrix() {
-    return _separation_matrix;
-}
-
-void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &data) {
+void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>>& data) {
     int deleted_edges = 0;
     int n = data[0].size();
     rep(i, _nr_variables) {
         rep(j, i) {
-            gsl_vector_const_view gsl_x = gsl_vector_const_view_array( &data[i][0], n);
-            gsl_vector_const_view gsl_y = gsl_vector_const_view_array( &data[j][0], n);
-            double pearson = gsl_stats_correlation(
-                    gsl_x.vector.data, STRIDE,
-                    gsl_y.vector.data, STRIDE,
-                    n
-            );
-            _correlation(i,j) = _correlation(j,i) = pearson;
+            gsl_vector_const_view gsl_x = gsl_vector_const_view_array(&data[i][0], n);
+            gsl_vector_const_view gsl_y = gsl_vector_const_view_array(&data[j][0], n);
+            double pearson = gsl_stats_correlation(gsl_x.vector.data, STRIDE, gsl_y.vector.data, STRIDE, n);
+            _correlation(i, j) = _correlation(j, i) = pearson;
         }
     }
 
-    _gauss_test = IndepTestGauss(_nr_samples,_correlation);
+    _gauss_test = IndepTestGauss(_nr_samples, _correlation);
 
     std::vector<int> empty_sep(0);
     rep(i, _nr_variables) {
         rep(j, i) {
             auto pearson = _gauss_test.test(i, j, empty_sep);
-            if(pearson >= _alpha) {
+            if (pearson >= _alpha) {
                 deleted_edges += 2;
-                _graph->deleteEdge(i,j);
+                _graph->deleteEdge(i, j);
             }
         }
     }
@@ -169,31 +152,27 @@ void PCAlgorithm::build_correlation_matrix(std::vector<std::vector<double>> &dat
     _working_graph = std::make_shared<Graph>(*_graph);
 }
 
-void PCAlgorithm::build_correlation_matrix(arma::Mat<double> &data) {
+void PCAlgorithm::build_correlation_matrix(arma::Mat<double>& data) {
     int deleted_edges = 0;
 
     rep(i, _nr_variables) {
         rep(j, i) {
             gsl_vector_const_view gsl_x = gsl_vector_const_view_array(data.colptr(i), _nr_samples);
             gsl_vector_const_view gsl_y = gsl_vector_const_view_array(data.colptr(j), _nr_samples);
-            double pearson = gsl_stats_correlation(
-                    gsl_x.vector.data, STRIDE,
-                    gsl_y.vector.data, STRIDE,
-                    _nr_samples
-            );
-            _correlation(i,j) = _correlation(j,i) = pearson;
+            double pearson = gsl_stats_correlation(gsl_x.vector.data, STRIDE, gsl_y.vector.data, STRIDE, _nr_samples);
+            _correlation(i, j) = _correlation(j, i) = pearson;
         }
     }
 
-    _gauss_test = IndepTestGauss(_nr_samples,_correlation);
+    _gauss_test = IndepTestGauss(_nr_samples, _correlation);
 
     std::vector<int> empty_sep(0);
     rep(i, _nr_variables) {
         rep(j, i) {
             auto pearson = _gauss_test.test(i, j, empty_sep);
-            if(pearson >= _alpha) {
+            if (pearson >= _alpha) {
                 deleted_edges += 2;
-                _graph->deleteEdge(i,j);
+                _graph->deleteEdge(i, j);
             }
         }
     }
@@ -201,25 +180,18 @@ void PCAlgorithm::build_correlation_matrix(arma::Mat<double> &data) {
     _working_graph = std::make_shared<Graph>(*_graph);
 }
 
-
-void PCAlgorithm::persist_result(
-    const std::string data_name,
-    const std::vector<std::string> &column_names
-) {
-    std::function<std::string(int)> _node = [&column_names] (int i) {return std::to_string(i);};
-    if (column_names.size() == _correlation.n_rows)
-        _node = [&column_names] (int i) {return column_names[i];};
+void PCAlgorithm::persist_result(const std::string data_name, const std::vector<std::string>& column_names) {
+    std::function<std::string(int)> _node = [&column_names](int i) { return std::to_string(i); };
+    if (column_names.size() == _correlation.n_rows) _node = [&column_names](int i) { return column_names[i]; };
 
     // Create dir
     std::string filename = data_name;
     const size_t last_slash_idx = filename.find_last_of("\\/");
-    if (std::string::npos != last_slash_idx)
-        filename.erase(0, last_slash_idx + 1);
+    if (std::string::npos != last_slash_idx) filename.erase(0, last_slash_idx + 1);
 
     // Remove extension if present.
     const size_t period_idx = filename.rfind('.');
-    if (std::string::npos != period_idx)
-        filename.erase(period_idx);
+    if (std::string::npos != period_idx) filename.erase(period_idx);
 
     std::string dir_name = "results_" + filename + "_" + std::to_string(_alpha) + "/";
     int exit_code = system(("mkdir -p " + dir_name).c_str());

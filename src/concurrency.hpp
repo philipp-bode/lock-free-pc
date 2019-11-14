@@ -1,7 +1,7 @@
-#pragma once 
+#pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 #include "concurrentqueue/concurrentqueue.h"
 
 #if WITH_STATS
@@ -19,7 +19,7 @@ struct TestInstruction {
     int Y;
 };
 
-struct Statistics{
+struct Statistics {
     int test_count = 0;
     int dequed_elements = 0;
     int deleted_edges = 0;
@@ -27,4 +27,4 @@ struct Statistics{
     double sum_time_queue_element = 0.0;
 };
 
-using TaskQueue = std::shared_ptr<moodycamel::ConcurrentQueue<TestInstruction> >;
+using TaskQueue = std::shared_ptr<moodycamel::ConcurrentQueue<TestInstruction>>;
