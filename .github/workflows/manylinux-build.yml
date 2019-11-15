@@ -1,4 +1,4 @@
-name: 'Hello World'
+name: 'Build manylinux wheels'
 
 on: [push]
 
@@ -8,11 +8,13 @@ on: [push]
 #       - v*
 jobs:
   lint:
+    runs-on: ubuntu-latest
+
     container:
       image: ${{ matrix.docker-image }}
       env:
         IMAGE: ${{ matrix.docker-image }}
-        
+
     strategy:
       matrix:
         docker-image: [quay.io/pypa/manylinux1_x86_64, quay.io/pypa/manylinux1_i686, quay.io/pypa/manylinux2010_x86_64]
