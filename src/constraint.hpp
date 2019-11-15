@@ -5,15 +5,15 @@
  */
 #pragma once
 
-#include <armadillo>
 #include <vector>
+
+#include "armadillo"
 
 /**
  * Virtual base class for conditional independence tests
  */
-class IndepTest
-{
-public:
+class IndepTest {
+ public:
     /**
      * Virtual destructor
      *
@@ -29,28 +29,24 @@ public:
      * @param   S   Conditioning set
      * @return  p-value for independence test of X_u and X_v given X_S
      */
-    virtual double test(int u, int v, std::vector<int> &S) const = 0;
+    virtual double test(int u, int v, std::vector<int>& S) const = 0;
 };
 
 /**
  * Conditional independence test for Gaussian data
  */
-class IndepTestGauss : public IndepTest
-{
-protected:
+class IndepTestGauss : public IndepTest {
+ protected:
     /**
      * Sufficient statistic for easier access in independence test
      */
     int _sampleSize;
     arma::mat _correlation;
 
-public:
-
+ public:
     IndepTestGauss() = default;
 
-    IndepTestGauss(int sampleSize, arma::Mat<double>& cor) :
-            _sampleSize(sampleSize),
-            _correlation(cor) {}
+    IndepTestGauss(int sampleSize, arma::Mat<double>& cor) : _sampleSize(sampleSize), _correlation(cor) {}
 
-    virtual double test(int u, int v, std::vector<int> &S) const;
+    virtual double test(int u, int v, std::vector<int>& S) const;
 };
