@@ -1,0 +1,25 @@
+name: 'Hello World'
+
+on: [push]
+
+# on:
+#   create:
+#     tags:
+#       - v*
+
+runs:
+  strategy:
+    matrix:
+      docker-image: [quay.io/pypa/manylinux1_x86_64, quay.io/pypa/manylinux1_i686, quay.io/pypa/manylinux2010_x86_64]
+  using: 'docker'
+  image: ${{ matrix.docker-image }}
+  env:
+    IMAGE: ${{ matrix.docker-image }}
+  steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Install dependencies
+      run: sudo ./install_dependencies.sh
+    - name: Build wheels
+      run: sudo ./build_dist.sh
