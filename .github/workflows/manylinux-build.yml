@@ -7,7 +7,7 @@ on: [push]
 #     tags:
 #       - v*
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
 
     container:
@@ -23,6 +23,6 @@ jobs:
         with:
           submodules: true
       - name: Install dependencies
-        run: sudo ./install_dependencies.sh
+        run: ./install_dependencies.sh
       - name: Build wheels
-        run: sudo ./build_dist.sh
+        run: ./build_dist.sh
