@@ -8,12 +8,14 @@ on: [push]
 #       - v*
 jobs:
   lint:
-
-    using: 'docker'
+    container:
+      image: ${{ matrix.docker-image }}
+      env:
+        IMAGE: ${{ matrix.docker-image }}
+        
     strategy:
       matrix:
         docker-image: [quay.io/pypa/manylinux1_x86_64, quay.io/pypa/manylinux1_i686, quay.io/pypa/manylinux2010_x86_64]
-    image: ${{ matrix.docker-image }}
     steps:
       - uses: actions/checkout@v1
         with:
@@ -22,5 +24,3 @@ jobs:
         run: sudo ./install_dependencies.sh
       - name: Build wheels
         run: sudo ./build_dist.sh
-        env:
-          IMAGE: ${{ matrix.docker-image }}
