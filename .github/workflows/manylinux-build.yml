@@ -19,7 +19,8 @@ jobs:
     strategy:
       matrix:
         docker-image:
-          - quay.io/pypa/manylinux1_x86_64
+          - philippbode/manylinux1_x86_64-cmake-boost
+          # - quay.io/pypa/manylinux1_x86_64
           # - quay.io/pypa/manylinux1_i686
           - quay.io/pypa/manylinux2010_x86_64
     steps:
