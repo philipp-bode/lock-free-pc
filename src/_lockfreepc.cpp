@@ -50,17 +50,17 @@ py::tuple py_skeleton(
     }
 
     auto alg = run_pc(mat, alpha, nr_threads);
-    auto edges = alg->get_edges();
+    auto edges = alg->get_edges_with_weight();
 
     size_t ndim = 2;
-    std::vector<size_t> shape = {edges.size() / 2, 2};
-    std::vector<size_t> strides = {sizeof(int) * 2, sizeof(int)};
+    std::vector<size_t> shape = {edges.size() / 3, 3};
+    std::vector<size_t> strides = {sizeof(double) * 3, sizeof(double)};
 
     auto edge_array = py::array(
         py::buffer_info(
             edges.data(),                         /* data as contiguous array  */
-            sizeof(int),                          /* size of one scalar        */
-            py::format_descriptor<int>::format(), /* data type                 */
+            sizeof(double),                          /* size of one scalar        */
+            py::format_descriptor<double>::format(), /* data type                 */
             ndim,                                 /* number of dimensions      */
             shape,                                /* shape of the matrix       */
             strides /* strides for each axis     */));

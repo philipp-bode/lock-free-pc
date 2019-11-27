@@ -53,7 +53,6 @@ std::vector<std::vector<double>> read_csv(const char* filename, std::vector<std:
                 data.push_back(std::vector<double>());
             }
         } else if (c == '\r' || c == '\n') {
-            file_input >> std::noskipws >> c;
             observations++;
             variables = 0;
         }

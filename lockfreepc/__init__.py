@@ -13,4 +13,11 @@ def skeleton(
     pd.DataFrame,
     Dict[Tuple[int, int], List[int]]
 ]:
-    return _lockfreepc.skeleton(df.values, alpha, threads)
+    edge_ids, sepset = _lockfreepc.skeleton(df.values, alpha, threads)
+    edges = pd.DataFrame(
+        edge_ids, columns=['src', 'dst', 'weight']
+    )
+    for column in ('src', 'dst'):
+        edges[column] = edges[column].apply(df.columns.__getitem__)
+
+    return edges, sepset
