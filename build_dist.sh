@@ -11,7 +11,7 @@ for PYBIN in /opt/python/cp3[6-9]*/bin; do
     "${PYBIN}/pip" wheel . -w wheelhouse/
 done
 
-PLAT="$(cut -d'/' -f3 <<<"$IMAGE")"
+PLAT="$(echo $IMAGE | grep -o '[^/]*$' | cut -d'-' -f1)"
 
 # Bundle external shared libraries into the wheels
 for whl in wheelhouse/*.whl; do
