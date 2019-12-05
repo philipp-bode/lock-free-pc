@@ -21,7 +21,7 @@
 
 class PCAlgorithm : public std::enable_shared_from_this<PCAlgorithm> {
  public:
-    PCAlgorithm(int vars, double alpha, int samples, int numberThreads);
+    PCAlgorithm(std::shared_ptr<arma::mat> data, double alpha, int numberThreads);
     double _alpha;
     void build_graph();
 
@@ -34,11 +34,10 @@ class PCAlgorithm : public std::enable_shared_from_this<PCAlgorithm> {
 
     std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> get_separation_matrix();
 
-    void build_correlation_matrix(std::vector<std::vector<double>>& data);
-    void build_correlation_matrix(arma::Mat<double>& data);
     inline double test(int u, int v, std::vector<int>& S) const { return _gauss_test.test(u, v, S); }
 
     void persist_result(const std::string data_name, const std::vector<std::string>& column_names);
+    std::shared_ptr<arma::mat> _correlation;
 
  protected:
     TaskQueue _work_queue;
@@ -47,7 +46,7 @@ class PCAlgorithm : public std::enable_shared_from_this<PCAlgorithm> {
     int _nr_variables;
     int _nr_samples;
     int _nr_threads;
-    arma::Mat<double> _correlation;
+    std::shared_ptr<arma::mat> _data;
     std::shared_ptr<Graph> _graph;
     std::shared_ptr<Graph> _working_graph;
     std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> _separation_matrix;

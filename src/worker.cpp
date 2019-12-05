@@ -13,14 +13,39 @@ Worker::Worker(
     std::shared_ptr<Graph> graph,
     std::shared_ptr<Graph> working_graph,
     std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> sep_matrix,
-    std::shared_ptr<Statistics> statistics)
+    std::shared_ptr<Statistics> statistics,
+    std::shared_ptr<arma::mat> data)
     : _work_queue(t_queue),
       _alg(alg),
       _level(level),
       _graph(graph),
       _working_graph(working_graph),
       _separation_matrix(sep_matrix),
-      _statistics(statistics) {}
+      _statistics(statistics),
+      _data(data) {}
+
+void Worker::test_without_conditional() {
+    TestInstruction test;
+
+    const int STRIDE = 1;
+
+    while (_work_queue->try_dequeue(test)) {
+        for (auto current_x = test.X; current_x <= test.Y; current_x++) {
+            auto gsl_x = gsl_vector_const_view_array(_data->colptr(current_x), _data->n_rows);
+            auto gsl_y = gsl_vector_const_view_array(_data->colptr(test.X), _data->n_rows);
+            double pearson = gsl_stats_correlation(gsl_x.vector.data, STRIDE, gsl_y.vector.data, STRIDE, _data->n_rows);
+            _alg->_correlation->at(current_x, test.X) = _alg->_correlation->at(test.X, current_x) = pearson;
+        }
+
+        std::vector<int> empty_sep(0);
+        for (auto current_x = test.X; current_x <= test.Y; current_x++) {
+            auto p = _alg->test(current_x, test.X, empty_sep);
+            if (p >= _alg->_alpha) {
+                _working_graph->deleteEdge(current_x, test.X);
+            }
+        }
+    }
+}
 
 void Worker::test_single_conditional() {
     TestInstruction test;
@@ -161,7 +186,9 @@ void Worker::test_higher_order() {
 }
 
 void Worker::execute_test() {
-    if (_level == 1) {
+    if (_level == 0) {
+        Worker::test_without_conditional();
+    } else if (_level == 1) {
         Worker::test_single_conditional();
     } else {
         Worker::test_higher_order();

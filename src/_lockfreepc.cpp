@@ -14,12 +14,11 @@
 // pure C++ code
 // -------------
 
-std::shared_ptr<PCAlgorithm> run_pc(arma::Mat<double>& data, double alpha, int nr_threads) {
-    auto alg = std::make_shared<PCAlgorithm>(data.n_cols, alpha, data.n_rows, nr_threads);
+std::shared_ptr<PCAlgorithm> run_pc(std::shared_ptr<arma::mat> data, double alpha, int nr_threads) {
+    auto alg = std::make_shared<PCAlgorithm>(data, alpha, nr_threads);
 
-    auto colp = data.colptr(0);
+    auto colp = data->colptr(0);
 
-    alg->build_correlation_matrix(data);
     alg->build_graph();
 
     return alg;
@@ -40,12 +39,12 @@ py::tuple py_skeleton(
     int number_of_observations = array.shape()[0];
     int number_of_variables = array.shape()[1];
 
-    arma::Mat<double> mat(number_of_observations, number_of_variables, arma::fill::zeros);
+    auto mat =  std::make_shared<arma::mat>(number_of_observations, number_of_variables, arma::fill::zeros);
 
     // copy py::array -> arma::Mat
     for (int x = 0; x < number_of_observations; x++) {
         for (int y = 0; y < number_of_variables; y++) {
-            mat(x, y) = array.at(x, y);
+            mat->at(x, y) = array.at(x, y);
         }
     }
 

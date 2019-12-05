@@ -67,29 +67,28 @@ std::vector<std::vector<double>> read_csv(const char* filename, std::vector<std:
     return data;
 }
 
-arma::Mat<double> read_csv_to_mat(const char* filename, std::vector<std::string>& column_names) {
+std::shared_ptr<arma::mat> read_csv_to_mat(const char* filename, std::vector<std::string>& column_names) {
     auto data = read_csv(filename, column_names);
 
     auto nr_observations = data[1].size();
     auto nr_variables = data.size();
 
-    arma::Mat<double> mat(nr_observations, nr_variables);
+    auto mat = std::make_shared<arma::mat>(nr_observations, nr_variables);
 
     for (int v = 0; v < (nr_variables); ++v) {
-        std::memcpy(mat.colptr(v), data[v].data(), nr_observations * sizeof(double));
+        std::memcpy(mat->colptr(v), data[v].data(), nr_observations * sizeof(double));
     }
 
     return mat;
 }
 
-std::shared_ptr<PCAlgorithm> run_pc(arma::Mat<double>& data, double alpha, int nr_threads) {
+std::shared_ptr<PCAlgorithm> run_pc(std::shared_ptr<arma::mat> data, double alpha, int nr_threads) {
     std::chrono::time_point<std::chrono::high_resolution_clock> start_graph, start_correlation, start, end_graph,
         end_correlation, end;
-    auto alg = std::make_shared<PCAlgorithm>(data.n_cols, alpha, data.n_rows, nr_threads);
+    auto alg = std::make_shared<PCAlgorithm>(data, alpha, nr_threads);
 
     set_time(start);
     set_time(start_correlation);
-    alg->build_correlation_matrix(data);
     set_time(end_correlation);
 
     set_time(start_graph);
@@ -133,7 +132,7 @@ int main(int argc, char* argv[]) {
     std::cout.precision(10);
 
     std::string _match(filename);
-    arma::Mat<double> array_data;
+    std::shared_ptr<arma::mat> array_data;
     std::vector<std::string> column_names(0);
 
     if (_match.find(".csv") != std::string::npos) {
