@@ -28,6 +28,7 @@ class PCAlgorithm : public std::enable_shared_from_this<PCAlgorithm> {
     void print_graph() const;
 
     std::vector<int> get_edges() const;
+    std::vector<double> get_edges_with_weight() const;
 
     int getNumberOfVariables();
 

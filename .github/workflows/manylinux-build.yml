@@ -1,0 +1,33 @@
+name: 'Build manylinux wheels'
+
+on: [push]
+
+# on:
+#   create:
+#     tags:
+#       - v*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: ${{ matrix.docker-image }}
+      env:
+        IMAGE: ${{ matrix.docker-image }}
+
+    strategy:
+      matrix:
+        docker-image:
+          - philippbode/manylinux1_x86_64-cmake-boost
+          # - quay.io/pypa/manylinux1_x86_64
+          # - quay.io/pypa/manylinux1_i686
+          - quay.io/pypa/manylinux2010_x86_64
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: Install dependencies
+        run: ./install_dependencies.sh
+      - name: Build wheels
+        run: ./build_dist.sh

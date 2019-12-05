@@ -113,6 +113,22 @@ void PCAlgorithm::build_graph() {
 
 std::vector<int> PCAlgorithm::get_edges() const { return _graph->getEdges(); }
 
+std::vector<double> PCAlgorithm::get_edges_with_weight() const {
+    auto edges = _graph->getEdges();
+    std::vector<double> edges_with_weight(0);
+
+    for (auto it = edges.begin(); it != edges.end(); ++it) {
+        int x = *it;
+        it++;
+        int y = *it;
+
+        edges_with_weight.push_back(x);
+        edges_with_weight.push_back(y);
+        edges_with_weight.push_back(_correlation(x, y));
+    }
+    return edges_with_weight;
+}
+
 void PCAlgorithm::print_graph() const { _graph->print_list(); }
 
 int PCAlgorithm::getNumberOfVariables() { return _nr_variables; }
