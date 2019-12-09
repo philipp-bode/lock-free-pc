@@ -41,6 +41,7 @@ void Worker::test_without_conditional() {
         for (auto current_x = test.X; current_x <= test.Y; current_x++) {
             auto p = _alg->test(current_x, test.X, empty_sep);
             if (p >= _alg->_alpha) {
+                increment_stat(_statistics->deleted_edges);
                 _working_graph->deleteEdge(current_x, test.X);
             }
         }

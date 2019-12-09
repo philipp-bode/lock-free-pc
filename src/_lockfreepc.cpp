@@ -39,7 +39,7 @@ py::tuple py_skeleton(
     int number_of_observations = array.shape()[0];
     int number_of_variables = array.shape()[1];
 
-    auto mat =  std::make_shared<arma::mat>(number_of_observations, number_of_variables, arma::fill::zeros);
+    auto mat = std::make_shared<arma::mat>(number_of_observations, number_of_variables, arma::fill::zeros);
 
     // copy py::array -> arma::Mat
     for (int x = 0; x < number_of_observations; x++) {
@@ -57,11 +57,11 @@ py::tuple py_skeleton(
 
     auto edge_array = py::array(
         py::buffer_info(
-            edges.data(),                         /* data as contiguous array  */
+            edges.data(),                            /* data as contiguous array  */
             sizeof(double),                          /* size of one scalar        */
             py::format_descriptor<double>::format(), /* data type                 */
-            ndim,                                 /* number of dimensions      */
-            shape,                                /* shape of the matrix       */
+            ndim,                                    /* number of dimensions      */
+            shape,                                   /* shape of the matrix       */
             strides /* strides for each axis     */));
 
     auto separation_matrix = alg->get_separation_matrix();

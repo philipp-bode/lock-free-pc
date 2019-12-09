@@ -4,11 +4,7 @@
 #include "worker.hpp"
 
 PCAlgorithm::PCAlgorithm(std::shared_ptr<arma::mat> data, double alpha, int numberThreads)
-    : _alpha(alpha),
-      _data(data),
-      _nr_variables(data->n_cols),
-      _nr_samples(data->n_rows),
-      _nr_threads(numberThreads) {
+    : _alpha(alpha), _data(data), _nr_variables(data->n_cols), _nr_samples(data->n_rows), _nr_threads(numberThreads) {
     _graph = std::make_shared<Graph>(_nr_variables);
     _working_graph = std::make_shared<Graph>(_nr_variables);
     _correlation = std::make_shared<arma::mat>(_nr_variables, _nr_variables, arma::fill::eye);
@@ -60,6 +56,7 @@ void PCAlgorithm::build_graph() {
         double duration_queue = 0.0;
         add_time_to(duration_queue, start_queue, end_queue);
         if (queue_size) {
+            std::cout << "-------- Level " << level << " --------" << std::endl;
             std::cout << "Queued all " << queue_size << " pairs, waiting for results.." << std::endl;
 
             std::vector<std::shared_ptr<std::thread>> threads;
@@ -72,7 +69,14 @@ void PCAlgorithm::build_graph() {
                 stats[i] = std::make_shared<Statistics>();
                 workers.push_back(
                     std::make_shared<Worker>(
-                        _work_queue, shared_from_this(), level, _graph, _working_graph, _separation_matrix, stats[i], _data));
+                        _work_queue,
+                        shared_from_this(),
+                        level,
+                        _graph,
+                        _working_graph,
+                        _separation_matrix,
+                        stats[i],
+                        _data));
                 threads.push_back(std::make_shared<std::thread>(&Worker::execute_test, *workers[i]));
             }
             auto watcher = Watcher(_work_queue, queue_size, stats);
@@ -91,18 +95,20 @@ void PCAlgorithm::build_graph() {
             std::cout << "Duration queue processing: " << duration_worker << " s" << std::endl;
             double tests_total = 0.0;
             double elements_total = 0.0;
+            double total_deleted = 0;
             for (int i = 0; i < _nr_threads; i++) {
                 total_tests += stats[i]->test_count;
                 tests_total += stats[i]->sum_time_gaus;
+                total_deleted += stats[i]->deleted_edges;
                 elements_total += stats[i]->sum_time_queue_element;
             }
-
+            std::cout << "Deleted edges:  " << total_deleted << std::endl;
             std::cout << "Total time for tests " << tests_total
                       << "s and total time for all workers: " << elements_total << "s." << std::endl;
             std::cout << "Percentage tests: " << (tests_total / elements_total) * 100.0 << "%." << std::endl;
 
 #endif
-            std::cout << "All tests done for level " << level << '.' << std::endl;
+            std::cout << "-------------------------" << std::endl << std::endl;
             stats.resize(0);
         } else {
             std::cout << "No tests left for level " << level << '.' << std::endl;
@@ -119,6 +125,7 @@ void PCAlgorithm::build_graph() {
 
     std::cout << "Total independence tests made: " << total_tests << std::endl;
 }
+
 
 std::vector<int> PCAlgorithm::get_edges() const { return _graph->getEdges(); }
 
@@ -145,7 +152,6 @@ int PCAlgorithm::getNumberOfVariables() { return _nr_variables; }
 std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> PCAlgorithm::get_separation_matrix() {
     return _separation_matrix;
 }
-
 
 void PCAlgorithm::persist_result(const std::string data_name, const std::vector<std::string>& column_names) {
     std::function<std::string(int)> _node = [&column_names](int i) { return std::to_string(i); };
