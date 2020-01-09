@@ -8,6 +8,8 @@
 
 class Worker {
  public:
+    enum class Correlation { PEARSON, SPEARMAN };
+
     Worker(
         TaskQueue t_queue,
         std::shared_ptr<PCAlgorithm> alg,
@@ -16,7 +18,8 @@ class Worker {
         std::shared_ptr<Graph> working_graph,
         std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> sep_matrix,
         std::shared_ptr<Statistics> statistics,
-        std::shared_ptr<arma::mat> data);
+        std::shared_ptr<arma::mat> data,
+        Worker::Correlation correlation);
 
     // Task to fetch test from _work_queue
     // and put the results the working graph and the separation matrix.
@@ -41,4 +44,5 @@ class Worker {
     std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> _separation_matrix;
     std::shared_ptr<Statistics> _statistics;
     std::shared_ptr<arma::mat> _data;
+    Worker::Correlation _correlation;
 };

@@ -1,12 +1,9 @@
 import os
-import re
 import sys
-import platform
 import subprocess
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
 
 
 class CMakeExtension(Extension):
@@ -62,7 +59,8 @@ setup(
     version='0.0.1',
     author='Philipp Bode',
     author_email='philipp.bode@student.hpi.de',
-    description='A test project using pybind11 and CMake',
+    url='http://github.com/philipp-bode/lock-free-pc',
+    description='A wrapper for highly parallelized causal structure learning.',
     long_description='',
     packages=[
         'lockfreepc'
@@ -70,4 +68,8 @@ setup(
     ext_modules=[CMakeExtension('_lockfreepc')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
+    install_requires=[
+       'pandas==0.25.3',
+       'networkx==2.4',
+    ],
 )

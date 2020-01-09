@@ -32,21 +32,20 @@ namespace py = pybind11;
 
 // wrap C++ function with NumPy array IO
 py::tuple py_skeleton(
-    py::array_t<double, py::array::c_style | py::array::forcecast> array, double alpha, int nr_threads) {
+    py::array_t<double, py::array::f_style> array, double alpha, int nr_threads) {
     // check input dimensions
     if (array.ndim() != 2) throw std::runtime_error("Input should be 2-D NumPy array");
 
     int number_of_observations = array.shape()[0];
     int number_of_variables = array.shape()[1];
 
-    auto mat = std::make_shared<arma::mat>(number_of_observations, number_of_variables, arma::fill::zeros);
-
-    // copy py::array -> arma::Mat
-    for (int x = 0; x < number_of_observations; x++) {
-        for (int y = 0; y < number_of_variables; y++) {
-            mat->at(x, y) = array.at(x, y);
-        }
-    }
+    auto r = array.mutable_unchecked<2>();
+    auto mat = std::make_shared<arma::mat>(
+        r.mutable_data(0, 0),
+        number_of_observations,
+        number_of_variables,
+        /*copy_aux_mem*/ false,
+        /*strict*/ true);
 
     auto alg = run_pc(mat, alpha, nr_threads);
     auto edges = alg->get_edges_with_weight();
@@ -80,7 +79,6 @@ py::tuple py_skeleton(
         }
     }
 
-    // return 2-D NumPy array
     return py::make_tuple(edge_array, separation_sets);
 }
 

@@ -76,7 +76,8 @@ void PCAlgorithm::build_graph() {
                         _working_graph,
                         _separation_matrix,
                         stats[i],
-                        _data));
+                        _data,
+                        Worker::Correlation::SPEARMAN));
                 threads.push_back(std::make_shared<std::thread>(&Worker::execute_test, *workers[i]));
             }
             auto watcher = Watcher(_work_queue, queue_size, stats);
@@ -125,7 +126,6 @@ void PCAlgorithm::build_graph() {
 
     std::cout << "Total independence tests made: " << total_tests << std::endl;
 }
-
 
 std::vector<int> PCAlgorithm::get_edges() const { return _graph->getEdges(); }
 
