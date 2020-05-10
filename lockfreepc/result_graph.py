@@ -52,6 +52,13 @@ class ResultGraph:
             reverse=True,
         )
 
+    def copy(self):
+        return self.__class__(
+            self.vertices.copy(),
+            self.edges.copy(),
+            self.sepsets.copy()
+        )
+
     def v_structures(self):
         skel = nx.convert_node_labels_to_integers(self.to_nx())
         v_structures = []

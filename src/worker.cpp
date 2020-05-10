@@ -15,7 +15,7 @@ Worker::Worker(
     std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> sep_matrix,
     std::shared_ptr<Statistics> statistics,
     std::shared_ptr<arma::mat> data,
-    Worker::Correlation correlation)
+    PCAlgorithm::Correlation correlation)
     : _work_queue(t_queue),
       _alg(alg),
       _level(level),
@@ -24,7 +24,7 @@ Worker::Worker(
       _separation_matrix(sep_matrix),
       _statistics(statistics),
       _data(data),
-      _correlation(correlation)  {}
+      _correlation(correlation) {}
 
 void Worker::test_without_conditional() {
     TestInstruction test;
@@ -38,11 +38,11 @@ void Worker::test_without_conditional() {
             auto gsl_x = gsl_vector_const_view_array(_data->colptr(current_x), _data->n_rows);
             auto gsl_y = gsl_vector_const_view_array(_data->colptr(test.X), _data->n_rows);
             switch (_correlation) {
-                case Worker::Correlation::PEARSON:
-                    correlation = gsl_stats_correlation(
-                        gsl_x.vector.data, STRIDE, gsl_y.vector.data, STRIDE, _data->n_rows);
+                case PCAlgorithm::Correlation::PEARSON:
+                    correlation =
+                        gsl_stats_correlation(gsl_x.vector.data, STRIDE, gsl_y.vector.data, STRIDE, _data->n_rows);
                     break;
-                case Worker::Correlation::SPEARMAN:
+                case PCAlgorithm::Correlation::SPEARMAN:
                     correlation = gsl_stats_spearman(
                         gsl_x.vector.data, STRIDE, gsl_y.vector.data, STRIDE, _data->n_rows, work.data());
                     break;

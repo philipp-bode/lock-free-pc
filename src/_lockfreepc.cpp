@@ -14,8 +14,8 @@
 // pure C++ code
 // -------------
 
-std::shared_ptr<PCAlgorithm> run_pc(std::shared_ptr<arma::mat> data, double alpha, int nr_threads) {
-    auto alg = std::make_shared<PCAlgorithm>(data, alpha, nr_threads);
+std::shared_ptr<PCAlgorithm> run_pc(std::shared_ptr<arma::mat> data, double alpha, int nr_threads, std::string test_name) {
+    auto alg = std::make_shared<PCAlgorithm>(data, alpha, nr_threads, test_name);
 
     auto colp = data->colptr(0);
 
@@ -31,8 +31,7 @@ std::shared_ptr<PCAlgorithm> run_pc(std::shared_ptr<arma::mat> data, double alph
 namespace py = pybind11;
 
 // wrap C++ function with NumPy array IO
-py::tuple py_skeleton(
-    py::array_t<double, py::array::f_style> array, double alpha, int nr_threads) {
+py::tuple py_skeleton(py::array_t<double, py::array::f_style> array, double alpha, int nr_threads, std::string test_name = "pearson") {
     // check input dimensions
     if (array.ndim() != 2) throw std::runtime_error("Input should be 2-D NumPy array");
 
@@ -47,7 +46,7 @@ py::tuple py_skeleton(
         /*copy_aux_mem*/ false,
         /*strict*/ true);
 
-    auto alg = run_pc(mat, alpha, nr_threads);
+    auto alg = run_pc(mat, alpha, nr_threads, test_name);
     auto edges = alg->get_edges_with_weight();
 
     size_t ndim = 2;

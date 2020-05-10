@@ -24,6 +24,8 @@ void Graph::deleteEdge(int node_x, int node_y) {
 
 std::vector<int> Graph::getNeighbours(int node_id) const { return _adjacency_lists[node_id]; }
 
+bool Graph::has_edge(int node_x, int node_y) const { return _adjacencies[node_x, node_y]; }
+
 std::vector<int> Graph::getEdges() const {
     std::vector<int> result;
 

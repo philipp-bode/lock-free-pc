@@ -12,6 +12,7 @@ class Graph {
     Graph(Graph& g);
 
     void deleteEdge(int node_x, int node_y);
+    bool has_edge(int node_x, int node_y) const;
     std::vector<int> getNeighbours(int node_id) const;
     std::vector<int> getNeighboursWithout(int node_id, int skip) const;
     int getNeighbourCount(int node_id) const;

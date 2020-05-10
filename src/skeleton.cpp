@@ -3,8 +3,15 @@
 #include "watcher.hpp"
 #include "worker.hpp"
 
-PCAlgorithm::PCAlgorithm(std::shared_ptr<arma::mat> data, double alpha, int numberThreads)
+PCAlgorithm::PCAlgorithm(std::shared_ptr<arma::mat> data, double alpha, int numberThreads, std::string test_name)
     : _alpha(alpha), _data(data), _nr_variables(data->n_cols), _nr_samples(data->n_rows), _nr_threads(numberThreads) {
+    auto search = _test_names.find(test_name);
+    if (search != _test_names.end()) {
+        _correlation_type = search->second;
+    } else {
+                throw std::runtime_error("Unknown conditional independence test name");
+    }
+
     _graph = std::make_shared<Graph>(_nr_variables);
     _working_graph = std::make_shared<Graph>(_nr_variables);
     _correlation = std::make_shared<arma::mat>(_nr_variables, _nr_variables, arma::fill::eye);
@@ -77,7 +84,7 @@ void PCAlgorithm::build_graph() {
                         _separation_matrix,
                         stats[i],
                         _data,
-                        Worker::Correlation::SPEARMAN));
+                        _correlation_type));
                 threads.push_back(std::make_shared<std::thread>(&Worker::execute_test, *workers[i]));
             }
             auto watcher = Watcher(_work_queue, queue_size, stats);

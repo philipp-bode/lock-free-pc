@@ -10,11 +10,13 @@ def skeleton(
     df: pd.DataFrame,
     alpha: float = 0.05,
     threads: int = 4,
+    test_name: str = "pearson"
 ) -> Tuple[
     pd.DataFrame,
     Dict[Tuple[int, int], List[int]]
 ]:
-    edge_ids, sepset = _lockfreepc.skeleton(df.values, alpha, threads)
+    edge_ids, sepset = _lockfreepc.skeleton(
+        df.values, alpha, threads, test_name)
     edges = pd.DataFrame(
         edge_ids, columns=['src', 'dst', 'weight']
     )
