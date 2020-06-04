@@ -13,18 +13,57 @@ Worker::Worker(
     std::shared_ptr<Graph> graph,
     std::shared_ptr<Graph> working_graph,
     std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> sep_matrix,
-    std::shared_ptr<Statistics> statistics)
+    std::shared_ptr<Statistics> statistics,
+    std::shared_ptr<arma::mat> data,
+    PCAlgorithm::Correlation correlation)
     : _work_queue(t_queue),
       _alg(alg),
       _level(level),
       _graph(graph),
       _working_graph(working_graph),
       _separation_matrix(sep_matrix),
-      _statistics(statistics) {}
+      _statistics(statistics),
+      _data(data),
+      _correlation(correlation) {}
+
+void Worker::test_without_conditional() {
+    TestInstruction test;
+
+    const int STRIDE = 1;
+    auto work = std::vector<double>(2 * _data->n_rows);
+    double correlation;
+
+    while (_work_queue->try_dequeue(test)) {
+        for (auto current_x = test.X; current_x <= test.Y; current_x++) {
+            auto gsl_x = gsl_vector_const_view_array(_data->colptr(current_x), _data->n_rows);
+            auto gsl_y = gsl_vector_const_view_array(_data->colptr(test.X), _data->n_rows);
+            switch (_correlation) {
+                case PCAlgorithm::Correlation::PEARSON:
+                    correlation =
+                        gsl_stats_correlation(gsl_x.vector.data, STRIDE, gsl_y.vector.data, STRIDE, _data->n_rows);
+                    break;
+                case PCAlgorithm::Correlation::SPEARMAN:
+                    correlation = gsl_stats_spearman(
+                        gsl_x.vector.data, STRIDE, gsl_y.vector.data, STRIDE, _data->n_rows, work.data());
+                    break;
+            }
+            _alg->_correlation->at(current_x, test.X) = _alg->_correlation->at(test.X, current_x) = correlation;
+        }
+
+        std::vector<int> empty_sep(0);
+        for (auto current_x = test.X; current_x <= test.Y; current_x++) {
+            auto p = _alg->test(current_x, test.X, empty_sep);
+            if (p >= _alg->_alpha) {
+                increment_stat(_statistics->deleted_edges);
+                _working_graph->deleteEdge(current_x, test.X);
+            }
+        }
+    }
+}
 
 void Worker::test_single_conditional() {
     TestInstruction test;
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_gauss, end_gauss;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_time_test, end_time_test;
 
     set_time(start_loop);
     while (_work_queue->try_dequeue(test)) {
@@ -35,10 +74,10 @@ void Worker::test_single_conditional() {
 
         for (auto const neighbour : adjX) {
             sep[0] = neighbour;
-            set_time(start_gauss);
+            set_time(start_time_test);
             auto p = _alg->test(test.X, test.Y, sep);
-            set_time(end_gauss);
-            add_time_to(_statistics->sum_time_gaus, start_gauss, end_gauss);
+            set_time(end_time_test);
+            add_time_to(_statistics->sum_time_test, start_time_test, end_time_test);
             increment_stat(_statistics->test_count);
             if (p >= _alg->_alpha) {
                 update_result(test.X, test.Y, sep);
@@ -51,10 +90,10 @@ void Worker::test_single_conditional() {
             std::vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
             for (auto const neighbour : adjY) {
                 sep[0] = neighbour;
-                set_time(start_gauss);
+                set_time(start_time_test);
                 auto p = _alg->test(test.X, test.Y, sep);
-                set_time(end_gauss);
-                add_time_to(_statistics->sum_time_gaus, start_gauss, end_gauss);
+                set_time(end_time_test);
+                add_time_to(_statistics->sum_time_test, start_time_test, end_time_test);
                 increment_stat(_statistics->test_count);
                 if (p >= _alg->_alpha) {
                     update_result(test.X, test.Y, sep);
@@ -69,7 +108,7 @@ void Worker::test_single_conditional() {
 
 void Worker::test_higher_order() {
     TestInstruction test;
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_gauss, end_gauss,
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_time_test, end_time_test,
         start_perm, end_perm;
 
     set_time(start_loop);
@@ -97,10 +136,10 @@ void Worker::test_higher_order() {
                     }
                     i++;
                 }
-                set_time(start_gauss);
+                set_time(start_time_test);
                 auto p = _alg->test(test.X, test.Y, subset);
-                set_time(end_gauss);
-                add_time_to(_statistics->sum_time_gaus, start_gauss, end_gauss);
+                set_time(end_time_test);
+                add_time_to(_statistics->sum_time_test, start_time_test, end_time_test);
                 increment_stat(_statistics->test_count);
                 if (p >= _alg->_alpha) {
                     update_result(test.X, test.Y, subset);
@@ -143,10 +182,10 @@ void Worker::test_higher_order() {
                     i++;
                 }
                 if (last_found >= last_equal_idx) {
-                    set_time(start_gauss);
+                    set_time(start_time_test);
                     auto p = _alg->test(test.X, test.Y, subset);
-                    set_time(end_gauss);
-                    add_time_to(_statistics->sum_time_gaus, start_gauss, end_gauss);
+                    set_time(end_time_test);
+                    add_time_to(_statistics->sum_time_test, start_time_test, end_time_test);
                     increment_stat(_statistics->test_count);
                     if (p >= _alg->_alpha) {
                         update_result(test.X, test.Y, subset);
@@ -161,7 +200,9 @@ void Worker::test_higher_order() {
 }
 
 void Worker::execute_test() {
-    if (_level == 1) {
+    if (_level == 0) {
+        Worker::test_without_conditional();
+    } else if (_level == 1) {
         Worker::test_single_conditional();
     } else {
         Worker::test_higher_order();

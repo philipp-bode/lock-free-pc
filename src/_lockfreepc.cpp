@@ -1,8 +1,9 @@
+#include <vector>
+
+#include <armadillo>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <armadillo>
-#include <vector>
 
 #include "concurrency.hpp"
 #include "constraint.hpp"
@@ -14,12 +15,12 @@
 // pure C++ code
 // -------------
 
-std::shared_ptr<PCAlgorithm> run_pc(arma::Mat<double>& data, double alpha, int nr_threads) {
-    auto alg = std::make_shared<PCAlgorithm>(data.n_cols, alpha, data.n_rows, nr_threads);
+std::shared_ptr<PCAlgorithm> run_pc(
+    std::shared_ptr<arma::mat> data, double alpha, int nr_threads, std::string test_name) {
+    auto alg = std::make_shared<PCAlgorithm>(data, alpha, nr_threads, test_name);
 
-    auto colp = data.colptr(0);
+    auto colp = data->colptr(0);
 
-    alg->build_correlation_matrix(data);
     alg->build_graph();
 
     return alg;
@@ -33,23 +34,22 @@ namespace py = pybind11;
 
 // wrap C++ function with NumPy array IO
 py::tuple py_skeleton(
-    py::array_t<double, py::array::c_style | py::array::forcecast> array, double alpha, int nr_threads) {
+    py::array_t<double, py::array::f_style> array, double alpha, int nr_threads, std::string test_name = "pearson") {
     // check input dimensions
     if (array.ndim() != 2) throw std::runtime_error("Input should be 2-D NumPy array");
 
     int number_of_observations = array.shape()[0];
     int number_of_variables = array.shape()[1];
 
-    arma::Mat<double> mat(number_of_observations, number_of_variables, arma::fill::zeros);
+    auto r = array.mutable_unchecked<2>();
+    auto mat = std::make_shared<arma::mat>(
+        r.mutable_data(0, 0),
+        number_of_observations,
+        number_of_variables,
+        /*copy_aux_mem*/ false,
+        /*strict*/ true);
 
-    // copy py::array -> arma::Mat
-    for (int x = 0; x < number_of_observations; x++) {
-        for (int y = 0; y < number_of_variables; y++) {
-            mat(x, y) = array.at(x, y);
-        }
-    }
-
-    auto alg = run_pc(mat, alpha, nr_threads);
+    auto alg = run_pc(mat, alpha, nr_threads, test_name);
     auto edges = alg->get_edges_with_weight();
 
     size_t ndim = 2;
@@ -58,11 +58,11 @@ py::tuple py_skeleton(
 
     auto edge_array = py::array(
         py::buffer_info(
-            edges.data(),                         /* data as contiguous array  */
+            edges.data(),                            /* data as contiguous array  */
             sizeof(double),                          /* size of one scalar        */
             py::format_descriptor<double>::format(), /* data type                 */
-            ndim,                                 /* number of dimensions      */
-            shape,                                /* shape of the matrix       */
+            ndim,                                    /* number of dimensions      */
+            shape,                                   /* shape of the matrix       */
             strides /* strides for each axis     */));
 
     auto separation_matrix = alg->get_separation_matrix();
@@ -81,7 +81,6 @@ py::tuple py_skeleton(
         }
     }
 
-    // return 2-D NumPy array
     return py::make_tuple(edge_array, separation_sets);
 }
 

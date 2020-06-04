@@ -1,11 +1,11 @@
 name: 'Build manylinux wheels'
 
-on: [push]
+# on: [push]
 
-# on:
-#   create:
-#     tags:
-#       - v*
+on:
+  create:
+    tags:
+      - v*
 
 jobs:
   build:

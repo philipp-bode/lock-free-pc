@@ -24,7 +24,7 @@ double IndepTestGauss::test(int u, int v, std::vector<int>& S) const {
     ind(1) = v;
     uint i, j;
     for (i = 0; i < S.size(); ++i) ind(i + 2) = S[i];
-    C_sub = _correlation.submat(ind, ind);
+    C_sub = _correlation->submat(ind, ind);
     for (i = 0; i < C_sub.n_rows; ++i)
         for (j = 0; j < C_sub.n_cols; ++j)
             if ((boost::math::isnan)(C_sub(i, j))) return std::numeric_limits<double>::quiet_NaN();
@@ -33,7 +33,7 @@ double IndepTestGauss::test(int u, int v, std::vector<int>& S) const {
 #define CUT_THR 0.9999999
     double r, absz;
     if (S.empty()) {
-        r = _correlation(u, v);
+        r = _correlation->at(u, v);
     } else if (S.size() == 1) {
         r = (C_sub(0, 1) - C_sub(0, 2) * C_sub(1, 2)) /
             sqrt((1 - C_sub(1, 2) * C_sub(1, 2)) * (1 - C_sub(0, 2) * C_sub(0, 2)));

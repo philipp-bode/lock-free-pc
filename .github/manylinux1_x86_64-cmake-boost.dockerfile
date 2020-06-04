@@ -4,6 +4,16 @@ FROM quay.io/pypa/manylinux1_x86_64
 RUN /opt/python/cp36-cp36m/bin/pip install cmake==3.13.3
 RUN ln -sfn /opt/python/cp36-cp36m/bin/cmake /usr/bin/cmake
 
+# Install LAPACK/BLAS for GSL
+RUN yum -y install blas-devel lapack-devel
+
+WORKDIR /tmp
+# Install newer GSL
+RUN curl -L ftp://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz -O
+RUN tar -xf gsl-2.6.tar.gz
+WORKDIR gsl-2.6
+RUN ./configure && make && make install
+
 WORKDIR /tmp
 # Install armadillo
 RUN curl -L http://sourceforge.net/projects/arma/files/armadillo-9.800.2.tar.xz -O

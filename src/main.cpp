@@ -67,29 +67,35 @@ std::vector<std::vector<double>> read_csv(const char* filename, std::vector<std:
     return data;
 }
 
-arma::Mat<double> read_csv_to_mat(const char* filename, std::vector<std::string>& column_names) {
+std::shared_ptr<arma::mat> read_csv_to_mat(const char* filename, std::vector<std::string>& column_names) {
     auto data = read_csv(filename, column_names);
 
     auto nr_observations = data[1].size();
     auto nr_variables = data.size();
 
-    arma::Mat<double> mat(nr_observations, nr_variables);
+    auto mat = std::make_shared<arma::mat>(nr_observations, nr_variables);
 
     for (int v = 0; v < (nr_variables); ++v) {
-        std::memcpy(mat.colptr(v), data[v].data(), nr_observations * sizeof(double));
+        std::memcpy(mat->colptr(v), data[v].data(), nr_observations * sizeof(double));
     }
 
     return mat;
 }
 
-std::shared_ptr<PCAlgorithm> run_pc(arma::Mat<double>& data, double alpha, int nr_threads) {
+std::shared_ptr<PCAlgorithm> run_pc(
+    std::shared_ptr<arma::mat> data, double alpha, int nr_threads, std::string test_name) {
     std::chrono::time_point<std::chrono::high_resolution_clock> start_graph, start_correlation, start, end_graph,
         end_correlation, end;
-    auto alg = std::make_shared<PCAlgorithm>(data.n_cols, alpha, data.n_rows, nr_threads);
+
+    std::shared_ptr<PCAlgorithm> alg;
+    if (test_name.length()) {
+        alg = std::make_shared<PCAlgorithm>(data, alpha, nr_threads, test_name);
+    } else {
+        alg = std::make_shared<PCAlgorithm>(data, alpha, nr_threads);
+    }
 
     set_time(start);
     set_time(start_correlation);
-    alg->build_correlation_matrix(data);
     set_time(end_correlation);
 
     set_time(start_graph);
@@ -111,11 +117,12 @@ std::shared_ptr<PCAlgorithm> run_pc(arma::Mat<double>& data, double alpha, int n
 }
 
 int main(int argc, char* argv[]) {
-    const char* filename;
     int nr_threads;
+    const char* filename;
     double alpha = 0.01;
+    std::string _test_name;
 
-    if (argc == 3 || argc == 4) {
+    if (argc == 3 || argc == 4 || argc == 5) {
         std::istringstream s1(argv[1]);
         if (!(s1 >> nr_threads)) std::cerr << "Invalid number " << argv[1] << '\n';
         filename = argv[2];
@@ -123,8 +130,12 @@ int main(int argc, char* argv[]) {
             std::istringstream s2(argv[3]);
             if (!(s2 >> alpha)) std::cerr << "Invalid number " << argv[3] << '\n';
         }
+        if (argc == 5) {
+            _test_name = argv[4];
+        }
     } else {
-        std::cout << "Usage: ./lock-free-pc <number_of_threads> <filename> [alpha=0.01]" << std::endl;
+        std::cout << "Usage: ./lock-free-pc <number_of_threads> <filename> [alpha=0.01] [test_name=pearson]"
+                  << std::endl;
         return 1;
     }
 
@@ -133,7 +144,7 @@ int main(int argc, char* argv[]) {
     std::cout.precision(10);
 
     std::string _match(filename);
-    arma::Mat<double> array_data;
+    std::shared_ptr<arma::mat> array_data;
     std::vector<std::string> column_names(0);
 
     if (_match.find(".csv") != std::string::npos) {
@@ -145,8 +156,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    auto alg = run_pc(array_data, alpha, nr_threads);
+    auto alg = run_pc(array_data, alpha, nr_threads, _test_name);
+    // for (auto v_structure : alg->get_v_structures()) {
+    //     std::cout
+    //         << std::get<0>(v_structure) << "-"
+    //         << std::get<1>(v_structure) << "-"
+    //         << std::get<2>(v_structure) << std::endl;
+    // }
+    // std::cout << alg->get_v_structures().size() << std::endl;
     // alg->print_graph();
+    // alg->_correlation->print(std::cout);
     std::cout.flush();
 
     alg->persist_result(filename, column_names);

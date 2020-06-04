@@ -15,7 +15,9 @@ class Worker {
         std::shared_ptr<Graph> graph,
         std::shared_ptr<Graph> working_graph,
         std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> sep_matrix,
-        std::shared_ptr<Statistics> statistics);
+        std::shared_ptr<Statistics> statistics,
+        std::shared_ptr<arma::mat> data,
+        PCAlgorithm::Correlation correlation);
 
     // Task to fetch test from _work_queue
     // and put the results the working graph and the separation matrix.
@@ -27,6 +29,7 @@ class Worker {
         _working_graph->deleteEdge(x, y);
         (*_separation_matrix)[x * _alg->getNumberOfVariables() + y] = std::make_shared<std::vector<int>>(subset);
     }
+    void test_without_conditional();
     void test_single_conditional();
     void test_higher_order();
 
@@ -38,4 +41,6 @@ class Worker {
     std::shared_ptr<Graph> _working_graph;
     std::shared_ptr<std::vector<std::shared_ptr<std::vector<int>>>> _separation_matrix;
     std::shared_ptr<Statistics> _statistics;
+    std::shared_ptr<arma::mat> _data;
+    PCAlgorithm::Correlation _correlation;
 };

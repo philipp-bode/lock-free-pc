@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "armadillo"
@@ -41,12 +42,12 @@ class IndepTestGauss : public IndepTest {
      * Sufficient statistic for easier access in independence test
      */
     int _sampleSize;
-    arma::mat _correlation;
+    std::shared_ptr<arma::mat> _correlation;
 
  public:
     IndepTestGauss() = default;
 
-    IndepTestGauss(int sampleSize, arma::Mat<double>& cor) : _sampleSize(sampleSize), _correlation(cor) {}
+    IndepTestGauss(int sampleSize, std::shared_ptr<arma::mat> cor) : _sampleSize(sampleSize), _correlation(cor) {}
 
     virtual double test(int u, int v, std::vector<int>& S) const;
 };
