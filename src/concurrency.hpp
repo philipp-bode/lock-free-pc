@@ -5,6 +5,8 @@
 
 #include "concurrentqueue/concurrentqueue.h"
 
+#include "graph.hpp"
+
 #if WITH_STATS
 #define increment_stat(x) x += 1;
 #define set_time(x) x = std::chrono::high_resolution_clock::now();
@@ -21,12 +23,23 @@ struct TestInstruction {
     int Y;
 };
 
+struct EdgeOrientationTaskInstruction {
+    int sep_idx;
+    VStructure v_structure;
+};
+
+struct VStructureResult {
+    double p;
+    std::vector<int> sepset;
+};
+
 struct Statistics {
     int test_count = 0;
     int dequed_elements = 0;
     int deleted_edges = 0;
-    double sum_time_gaus = 0.0;
+    double sum_time_test = 0.0;
     double sum_time_queue_element = 0.0;
 };
 
 using TaskQueue = std::shared_ptr<moodycamel::ConcurrentQueue<TestInstruction>>;
+using VStructureQueue = std::shared_ptr<moodycamel::ConcurrentQueue<EdgeOrientationTaskInstruction>>;

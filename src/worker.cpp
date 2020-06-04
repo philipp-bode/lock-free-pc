@@ -63,7 +63,7 @@ void Worker::test_without_conditional() {
 
 void Worker::test_single_conditional() {
     TestInstruction test;
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_gauss, end_gauss;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_time_test, end_time_test;
 
     set_time(start_loop);
     while (_work_queue->try_dequeue(test)) {
@@ -74,10 +74,10 @@ void Worker::test_single_conditional() {
 
         for (auto const neighbour : adjX) {
             sep[0] = neighbour;
-            set_time(start_gauss);
+            set_time(start_time_test);
             auto p = _alg->test(test.X, test.Y, sep);
-            set_time(end_gauss);
-            add_time_to(_statistics->sum_time_gaus, start_gauss, end_gauss);
+            set_time(end_time_test);
+            add_time_to(_statistics->sum_time_test, start_time_test, end_time_test);
             increment_stat(_statistics->test_count);
             if (p >= _alg->_alpha) {
                 update_result(test.X, test.Y, sep);
@@ -90,10 +90,10 @@ void Worker::test_single_conditional() {
             std::vector<int> adjY = _graph->getNeighboursWithout(test.Y, test.X);
             for (auto const neighbour : adjY) {
                 sep[0] = neighbour;
-                set_time(start_gauss);
+                set_time(start_time_test);
                 auto p = _alg->test(test.X, test.Y, sep);
-                set_time(end_gauss);
-                add_time_to(_statistics->sum_time_gaus, start_gauss, end_gauss);
+                set_time(end_time_test);
+                add_time_to(_statistics->sum_time_test, start_time_test, end_time_test);
                 increment_stat(_statistics->test_count);
                 if (p >= _alg->_alpha) {
                     update_result(test.X, test.Y, sep);
@@ -108,7 +108,7 @@ void Worker::test_single_conditional() {
 
 void Worker::test_higher_order() {
     TestInstruction test;
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_gauss, end_gauss,
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_loop, end_loop, start_time_test, end_time_test,
         start_perm, end_perm;
 
     set_time(start_loop);
@@ -136,10 +136,10 @@ void Worker::test_higher_order() {
                     }
                     i++;
                 }
-                set_time(start_gauss);
+                set_time(start_time_test);
                 auto p = _alg->test(test.X, test.Y, subset);
-                set_time(end_gauss);
-                add_time_to(_statistics->sum_time_gaus, start_gauss, end_gauss);
+                set_time(end_time_test);
+                add_time_to(_statistics->sum_time_test, start_time_test, end_time_test);
                 increment_stat(_statistics->test_count);
                 if (p >= _alg->_alpha) {
                     update_result(test.X, test.Y, subset);
@@ -182,10 +182,10 @@ void Worker::test_higher_order() {
                     i++;
                 }
                 if (last_found >= last_equal_idx) {
-                    set_time(start_gauss);
+                    set_time(start_time_test);
                     auto p = _alg->test(test.X, test.Y, subset);
-                    set_time(end_gauss);
-                    add_time_to(_statistics->sum_time_gaus, start_gauss, end_gauss);
+                    set_time(end_time_test);
+                    add_time_to(_statistics->sum_time_test, start_time_test, end_time_test);
                     increment_stat(_statistics->test_count);
                     if (p >= _alg->_alpha) {
                         update_result(test.X, test.Y, subset);

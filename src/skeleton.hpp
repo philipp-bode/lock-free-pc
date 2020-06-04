@@ -28,7 +28,7 @@ class PCAlgorithm : public std::enable_shared_from_this<PCAlgorithm> {
     PCAlgorithm(std::shared_ptr<arma::mat> data, double alpha, int numberThreads, std::string test_name = "pearson");
     double _alpha;
     void build_graph();
-    std::vector<std::tuple<int, int, int>> get_v_structures() const;
+    void test_v_structures();
     void print_graph() const;
 
     std::vector<int> get_edges() const;

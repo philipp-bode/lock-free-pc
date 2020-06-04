@@ -15,7 +15,21 @@ if(WITH_STATS)
     add_definitions(-DWITH_STATS)
 endif()
 
-set(SOURCE_FILES constraint.hpp constraint.cpp graph.hpp graph.cpp worker.hpp worker.cpp watcher.hpp watcher.cpp skeleton.hpp skeleton.cpp)
+set(SOURCE_FILES
+    constraint.hpp
+    constraint.cpp
+    graph.hpp
+    graph.cpp
+    worker.hpp
+    worker.cpp
+    v_structure_worker.hpp
+    v_structure_worker.cpp
+    watcher.hpp
+    watcher.cpp
+    skeleton.hpp
+    skeleton.cpp
+    tests/base_test.hpp
+)
 
 add_executable(lockfreepc main.cpp ${SOURCE_FILES})
 
