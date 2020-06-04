@@ -28,7 +28,6 @@ set(SOURCE_FILES
     watcher.cpp
     skeleton.hpp
     skeleton.cpp
-    tests/base_test.hpp
 )
 
 add_executable(lockfreepc main.cpp ${SOURCE_FILES})

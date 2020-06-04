@@ -19,7 +19,7 @@ class VStructureWorker {
     // Task to fetch test from _work_queue
     // and put the results the working graph and the separation matrix.
     void execute_test();
-    void _execute_search(int sep_idx, int node1, int node2, int Y, double &max_p);
+    void _execute_search(int sep_idx, int node1, int node2, int Y, double& max_p);
 
     // Write independence test results to the separation set store
     inline void update_result(int sep_idx, const std::vector<int>& subset, double p) {

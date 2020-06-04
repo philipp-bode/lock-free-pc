@@ -17,9 +17,7 @@ Graph::Graph(Graph& g) {
     _num_nodes = g.getNumberOfNodes();
 }
 
-void Graph::direct_edge(int node_x, int node_y) {
-    _adjacencies.at(node_y, node_x) = 0;
-}
+void Graph::direct_edge(int node_x, int node_y) { _adjacencies.at(node_y, node_x) = 0; }
 
 bool Graph::is_edge_directed(int node_x, int node_y) const {
     bool A = static_cast<bool>(_adjacencies.at(node_x, node_y));
@@ -98,7 +96,6 @@ std::vector<VStructure> Graph::getVStructures() {
     }
     return v_structures;
 }
-
 
 std::vector<std::vector<int>> Graph::getAdjacencyLists() { return _adjacency_lists; }
 

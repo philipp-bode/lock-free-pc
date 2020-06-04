@@ -7,13 +7,11 @@
 
 #include "armadillo"
 
-
 struct VStructure {
     int X;
     int Y;
     int Z;
 };
-
 
 class Graph {
  public:

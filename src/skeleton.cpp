@@ -1,8 +1,8 @@
 #include "skeleton.hpp"
 
+#include "v_structure_worker.hpp"
 #include "watcher.hpp"
 #include "worker.hpp"
-#include "v_structure_worker.hpp"
 
 PCAlgorithm::PCAlgorithm(std::shared_ptr<arma::mat> data, double alpha, int numberThreads, std::string test_name)
     : _alpha(alpha), _data(data), _nr_variables(data->n_cols), _nr_samples(data->n_rows), _nr_threads(numberThreads) {
@@ -137,33 +137,29 @@ void PCAlgorithm::build_graph() {
     // test_v_structures();
 }
 
-bool compareByP(
-    const std::shared_ptr<VStructureResult> &a,
-    const std::shared_ptr<VStructureResult> &b) {
+bool compareByP(const std::shared_ptr<VStructureResult>& a, const std::shared_ptr<VStructureResult>& b) {
     auto a_P = (a == nullptr) ? 0 : a->p;
     auto b_P = (b == nullptr) ? 0 : b->p;
     return a_P > b_P;
 }
 
 template <typename T>
-std::vector<size_t> sort_indexes(const std::vector<T> &v) {
-  // initialize original index locations
-  std::vector<size_t> idx(v.size());
-  std::iota(idx.begin(), idx.end(), 0);
+std::vector<size_t> sort_indexes(const std::vector<T>& v) {
+    // initialize original index locations
+    std::vector<size_t> idx(v.size());
+    std::iota(idx.begin(), idx.end(), 0);
 
-  // sort indexes based on comparing values in v
-  // using std::stable_sort instead of std::sort
-  // to avoid unnecessary index re-orderings
-  // when v contains elements of equal values
-  std::stable_sort(idx.begin(), idx.end(),
-       [&v](size_t i1, size_t i2) {return compareByP(v[i1], v[i2]);});
+    // sort indexes based on comparing values in v
+    // using std::stable_sort instead of std::sort
+    // to avoid unnecessary index re-orderings
+    // when v contains elements of equal values
+    std::stable_sort(idx.begin(), idx.end(), [&v](size_t i1, size_t i2) { return compareByP(v[i1], v[i2]); });
 
-  return idx;
+    return idx;
 }
 void PCAlgorithm::test_v_structures() {
     std::chrono::time_point<std::chrono::high_resolution_clock> start_queue, end_queue, start_worker, end_worker;
     auto queue = std::make_shared<moodycamel::ConcurrentQueue<EdgeOrientationTaskInstruction>>();
-
 
     set_time(start_queue);
     auto v_structures = _graph->getVStructures();
@@ -171,7 +167,7 @@ void PCAlgorithm::test_v_structures() {
     auto max_separations =
         std::make_shared<std::vector<std::shared_ptr<VStructureResult>>>(v_structures.size(), nullptr);
     for (int i = 0; i < v_structures.size(); i++) {
-    // for (auto &v_structure : _graph->getVStructures()) {
+        // for (auto &v_structure : _graph->getVStructures()) {
         auto v_structure = v_structures[i];
         queue->enqueue(EdgeOrientationTaskInstruction{i, v_structure});
         // std::cout << v_structure.X << " -> " << v_structure.Y << " <- " << v_structure.Z << std::endl;
@@ -179,7 +175,6 @@ void PCAlgorithm::test_v_structures() {
     set_time(end_queue);
     double duration_queue = 0.0;
     add_time_to(duration_queue, start_queue, end_queue);
-
 
     std::vector<std::shared_ptr<std::thread>> threads;
     std::vector<std::shared_ptr<VStructureWorker>> workers;
@@ -189,13 +184,7 @@ void PCAlgorithm::test_v_structures() {
     rep(i, _nr_threads) {
         stats[i] = std::make_shared<Statistics>();
         workers.push_back(
-            std::make_shared<VStructureWorker>(
-                queue,
-                shared_from_this(),
-                _graph,
-                max_separations,
-                stats[i],
-                _data));
+            std::make_shared<VStructureWorker>(queue, shared_from_this(), _graph, max_separations, stats[i], _data));
         threads.push_back(std::make_shared<std::thread>(&VStructureWorker::execute_test, *workers[i]));
     }
 
@@ -216,15 +205,13 @@ void PCAlgorithm::test_v_structures() {
         if ((*max_separations)[i] != nullptr) {
             auto v_structure = v_structures[i];
 
-            if (
-                !_working_graph->is_edge_directed(v_structure.X, v_structure.Y) &&
-                !_working_graph->is_edge_directed(v_structure.Y, v_structure.Z)
-            ) {
+            if (!_working_graph->is_edge_directed(v_structure.X, v_structure.Y) &&
+                !_working_graph->is_edge_directed(v_structure.Y, v_structure.Z)) {
                 _working_graph->direct_edge(v_structure.X, v_structure.Y);
                 _working_graph->direct_edge(v_structure.Y, v_structure.Z);
             }
             std::cout << v_structure.X << " -> " << v_structure.Y << " <- " << v_structure.Z << std::endl;
-            std::cout << "i: " << i << "|"<< (*max_separations)[i]->p << std::endl;
+            std::cout << "i: " << i << "|" << (*max_separations)[i]->p << std::endl;
         }
     }
     _graph = std::make_shared<Graph>(*_working_graph);
