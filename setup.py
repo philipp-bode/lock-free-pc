@@ -54,6 +54,21 @@ class CMakeBuild(build_ext):
             ['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
+requirements = [
+    'pandas==0.25.3',
+    'networkx==2.4',
+],
+
+test_requirements = [
+    'pytest==5.4.3',
+    'pytest-benchmark==3.2.3',
+]
+
+extras = {
+    'test': test_requirements,
+}
+
+
 setup(
     name='lockfreepc',
     version='0.0.1',
@@ -68,12 +83,7 @@ setup(
     ext_modules=[CMakeExtension('_lockfreepc')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
-    install_requires=[
-       'pandas==0.25.3',
-       'networkx==2.4',
-    ],
-    tests_require=[
-        'pytest==5.4.3',
-        'pytest-benchmark==3.2.3',
-    ]
+    install_requires=requirements,
+    tests_require=test_requirements,
+    extras_require=extras,
 )
