@@ -1,4 +1,3 @@
-import time
 from typing import Tuple, List, Dict
 
 import pandas as pd
@@ -16,7 +15,6 @@ def skeleton(
     pd.DataFrame,
     Dict[Tuple[int, int], List[int]]
 ]:
-    time.sleep(20)
     edge_ids, sepset = _lockfreepc.skeleton(
         df.values, alpha, threads, test_name)
     edges = pd.DataFrame(
