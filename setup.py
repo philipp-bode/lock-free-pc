@@ -72,4 +72,8 @@ setup(
        'pandas==0.25.3',
        'networkx==2.4',
     ],
+    tests_require=[
+        'pytest==5.4.3',
+        'pytest-benchmark==3.2.3',
+    ]
 )

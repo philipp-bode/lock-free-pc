@@ -1,0 +1,32 @@
+name: CI
+
+on: [push]
+
+jobs:
+  compile:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - uses: actions/setup-python@v1
+    - name: Install dependencies
+      run: sudo ./install_dependencies.sh
+    - name: pip install
+      run: pip install -e .[test]
+    - name: Pytest E2E
+      run: pytest tests/e2e
+    - name: Pytest Regression
+      run: pytest tests/regression --benchmark-json benchmark.json
+    - name: Store benchmark result
+      uses: rhysd/github-action-benchmark@v1
+      with:
+        name: Python Benchmark with pytest-benchmark
+        tool: 'pytest'
+        output-file-path: benchmark.json
+        auto-push: true
+        # Show alert with commit comment on detecting possible performance regression
+        alert-threshold: '200%'
+        fail-on-alert: true
