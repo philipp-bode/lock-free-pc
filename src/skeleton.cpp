@@ -211,7 +211,6 @@ void PCAlgorithm::test_v_structures() {
         }
     }
     _graph = std::make_shared<Graph>(*_working_graph);
-
 }
 
 std::vector<int> PCAlgorithm::get_edges() const { return _graph->getEdges(); }
