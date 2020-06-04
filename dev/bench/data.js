@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1591297731650,
+  "lastUpdate": 1591297969079,
   "repoUrl": "https://github.com/philipp-bode/lock-free-pc",
   "entries": {
     "Python Benchmark with pytest-benchmark": [
@@ -62,6 +62,37 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.056513863169231376",
             "extra": "mean: 25.0353280398 sec\nrounds: 5"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "philipp.bode@student.hpi.de",
+            "name": "philipp.bode",
+            "username": "philipp-bode"
+          },
+          "committer": {
+            "email": "philipp.bode@student.hpi.de",
+            "name": "philipp.bode",
+            "username": "philipp-bode"
+          },
+          "distinct": true,
+          "id": "e79091b92e645e574b81af5641021695503d516c",
+          "message": "Remove artifical regression, decrease performance alert threshold.",
+          "timestamp": "2020-06-04T21:09:59+02:00",
+          "tree_id": "e7f724f00618f5d4731f37533b545d84504e8e6f",
+          "url": "https://github.com/philipp-bode/lock-free-pc/commit/e79091b92e645e574b81af5641021695503d516c"
+        },
+        "date": 1591297968690,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "tests/regression/test_skeleton_performance.py::test_skeleton_performance",
+            "value": 0.16477156869698312,
+            "unit": "iter/sec",
+            "range": "stddev: 0.07082496043219304",
+            "extra": "mean: 6.069008190599993 sec\nrounds: 5"
           }
         ]
       }
