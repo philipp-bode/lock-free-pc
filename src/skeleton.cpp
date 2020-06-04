@@ -167,7 +167,6 @@ void PCAlgorithm::test_v_structures() {
     auto max_separations =
         std::make_shared<std::vector<std::shared_ptr<VStructureResult>>>(v_structures.size(), nullptr);
     for (int i = 0; i < v_structures.size(); i++) {
-        // for (auto &v_structure : _graph->getVStructures()) {
         auto v_structure = v_structures[i];
         queue->enqueue(EdgeOrientationTaskInstruction{i, v_structure});
         // std::cout << v_structure.X << " -> " << v_structure.Y << " <- " << v_structure.Z << std::endl;
@@ -197,9 +196,6 @@ void PCAlgorithm::test_v_structures() {
     }
     watcher_thread->join();
 
-    // std::sort(max_separations->begin(), max_separations->end(), compareByP);
-    // std::cout << "Begin: " << max_separations->front()->p << std::endl;
-
     int not_nulls = 0;
     for (int i : sort_indexes(*max_separations)) {
         if ((*max_separations)[i] != nullptr) {
@@ -210,29 +206,12 @@ void PCAlgorithm::test_v_structures() {
                 _working_graph->direct_edge(v_structure.X, v_structure.Y);
                 _working_graph->direct_edge(v_structure.Y, v_structure.Z);
             }
-            std::cout << v_structure.X << " -> " << v_structure.Y << " <- " << v_structure.Z << std::endl;
-            std::cout << "i: " << i << "|" << (*max_separations)[i]->p << std::endl;
+            // std::cout << v_structure.X << " -> " << v_structure.Y << " <- " << v_structure.Z << std::endl;
+            // std::cout << "i: " << i << "|" << (*max_separations)[i]->p << std::endl;
         }
     }
     _graph = std::make_shared<Graph>(*_working_graph);
 
-    // std::cout << _working_graph->is_edge_directed(14, 1050) << std::endl;
-    // std::cout << _working_graph->is_edge_directed(14, 14) << std::endl;
-
-    // _working_graph->direct_edge(14, 1050);
-    // std::cout << _working_graph->is_edge_directed(14, 1050) << std::endl;
-
-    // 14 -> 1050
-    // for (auto result : (*max_separations)) {
-    //     if (result != nullptr) {
-    //         // not_nulls++;
-    //         // for (auto &elem : result->p) {
-    //         //     std::cout << elem << ",";
-    //         // }
-    //         std::cout << result->p << std::endl;
-    //     }
-    // }
-    // std::cout << "Not nulls: " << not_nulls << std::endl;
 }
 
 std::vector<int> PCAlgorithm::get_edges() const { return _graph->getEdges(); }
