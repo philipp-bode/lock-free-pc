@@ -3,7 +3,7 @@ name: Python Tests
 on: [push]
 
 jobs:
-  compile:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -28,6 +28,6 @@ jobs:
         output-file-path: benchmark.json
         github-token: ${{ secrets.GITHUB_TOKEN }}
         auto-push: true
-        # Show alert with commit comment on detecting possible performance regression
-        alert-threshold: '5%'
+        # Show alert on detecting possible performance regression
+        alert-threshold: '50%'
         fail-on-alert: true
