@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1591358117124,
+  "lastUpdate": 1591359888645,
   "repoUrl": "https://github.com/philipp-bode/lock-free-pc",
   "entries": {
     "Python Benchmark with pytest-benchmark": [
@@ -155,6 +155,37 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.31549171406379345",
             "extra": "mean: 5.444807367200002 sec\nrounds: 5"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "9318628+philipp-bode@users.noreply.github.com",
+            "name": "philipp-bode",
+            "username": "philipp-bode"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "584c91c699ef52904dfb8a9c27670c207d7c72ff",
+          "message": "Feature: Regression testing (#16)",
+          "timestamp": "2020-06-05T14:21:57+02:00",
+          "tree_id": "df40e14efe0129b8f366998a4c5a51add75165a0",
+          "url": "https://github.com/philipp-bode/lock-free-pc/commit/584c91c699ef52904dfb8a9c27670c207d7c72ff"
+        },
+        "date": 1591359888208,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "tests/regression/test_skeleton_performance.py::test_skeleton_performance",
+            "value": 0.1541047277525724,
+            "unit": "iter/sec",
+            "range": "stddev: 0.023105771535128578",
+            "extra": "mean: 6.489093583199997 sec\nrounds: 5"
           }
         ]
       }
