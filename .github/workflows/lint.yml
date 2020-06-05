@@ -16,7 +16,7 @@ jobs:
         architecture: 'x64'
 
     - name: Install cpplint
-      run: pip install cpplint
+      run: pip install cpplint==1.5.1
 
     - name: Lint
       run: ./lint.sh
