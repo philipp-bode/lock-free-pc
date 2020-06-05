@@ -29,5 +29,5 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         auto-push: true
         # Show alert on detecting possible performance regression
-        alert-threshold: '50%'
+        alert-threshold: '125%'
         fail-on-alert: true
