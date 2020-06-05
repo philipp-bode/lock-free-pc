@@ -47,37 +47,6 @@ window.BENCHMARK_DATA = {
             "username": "philipp-bode"
           },
           "distinct": true,
-          "id": "899eea2f7205f2f9381d017b0c510e1fe897f495",
-          "message": "Test alert threshold.",
-          "timestamp": "2020-06-04T21:03:23+02:00",
-          "tree_id": "c49398994fd01e85d5d1cd585e3b33883c893e61",
-          "url": "https://github.com/philipp-bode/lock-free-pc/commit/899eea2f7205f2f9381d017b0c510e1fe897f495"
-        },
-        "date": 1591297731269,
-        "tool": "pytest",
-        "benches": [
-          {
-            "name": "tests/regression/test_skeleton_performance.py::test_skeleton_performance",
-            "value": 0.039943554900109424,
-            "unit": "iter/sec",
-            "range": "stddev: 0.056513863169231376",
-            "extra": "mean: 25.0353280398 sec\nrounds: 5"
-          }
-        ]
-      },
-      {
-        "commit": {
-          "author": {
-            "email": "philipp.bode@student.hpi.de",
-            "name": "philipp.bode",
-            "username": "philipp-bode"
-          },
-          "committer": {
-            "email": "philipp.bode@student.hpi.de",
-            "name": "philipp.bode",
-            "username": "philipp-bode"
-          },
-          "distinct": true,
           "id": "e79091b92e645e574b81af5641021695503d516c",
           "message": "Remove artifical regression, decrease performance alert threshold.",
           "timestamp": "2020-06-04T21:09:59+02:00",
