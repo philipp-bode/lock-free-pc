@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1591354835466,
+  "lastUpdate": 1591355141554,
   "repoUrl": "https://github.com/philipp-bode/lock-free-pc",
   "entries": {
     "Python Benchmark with pytest-benchmark": [
@@ -93,6 +93,37 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.07730997765342115",
             "extra": "mean: 5.668719761200004 sec\nrounds: 5"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "philipp.bode@student.hpi.de",
+            "name": "philipp.bode",
+            "username": "philipp-bode"
+          },
+          "committer": {
+            "email": "philipp.bode@student.hpi.de",
+            "name": "philipp.bode",
+            "username": "philipp-bode"
+          },
+          "distinct": true,
+          "id": "82e4ed0fbc743bc95847a99581dc76c98b0291a8",
+          "message": "Fixes cpplint version; appeases linter.",
+          "timestamp": "2020-06-05T13:02:51+02:00",
+          "tree_id": "f791140a7ccbe66feb9007d026e898750b4dd3c5",
+          "url": "https://github.com/philipp-bode/lock-free-pc/commit/82e4ed0fbc743bc95847a99581dc76c98b0291a8"
+        },
+        "date": 1591355141147,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "tests/regression/test_skeleton_performance.py::test_skeleton_performance",
+            "value": 0.16667296961057568,
+            "unit": "iter/sec",
+            "range": "stddev: 0.2255082435906715",
+            "extra": "mean: 5.999773102600005 sec\nrounds: 5"
           }
         ]
       }
