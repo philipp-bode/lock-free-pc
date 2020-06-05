@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1591297969079,
+  "lastUpdate": 1591354835466,
   "repoUrl": "https://github.com/philipp-bode/lock-free-pc",
   "entries": {
     "Python Benchmark with pytest-benchmark": [
@@ -62,6 +62,37 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.07082496043219304",
             "extra": "mean: 6.069008190599993 sec\nrounds: 5"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "philipp.bode@student.hpi.de",
+            "name": "philipp.bode",
+            "username": "philipp-bode"
+          },
+          "committer": {
+            "email": "philipp.bode@student.hpi.de",
+            "name": "philipp.bode",
+            "username": "philipp-bode"
+          },
+          "distinct": true,
+          "id": "7f1b0f634c9d558dc0cecf152ad56180f3d1565a",
+          "message": "Increase alert threshold; rename job.",
+          "timestamp": "2020-06-05T12:57:59+02:00",
+          "tree_id": "41a8f477ef392c81976c9ea0b8a8b1aa3c35696f",
+          "url": "https://github.com/philipp-bode/lock-free-pc/commit/7f1b0f634c9d558dc0cecf152ad56180f3d1565a"
+        },
+        "date": 1591354835001,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "tests/regression/test_skeleton_performance.py::test_skeleton_performance",
+            "value": 0.17640667419204215,
+            "unit": "iter/sec",
+            "range": "stddev: 0.07730997765342115",
+            "extra": "mean: 5.668719761200004 sec\nrounds: 5"
           }
         ]
       }
