@@ -1,9 +1,9 @@
-#include <vector>
-
-#include <armadillo>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
+#include <armadillo>
+#include <vector>
 
 #include "concurrency.hpp"
 #include "constraint.hpp"
