@@ -20,7 +20,11 @@ void Watcher::watch() {
             auto finished_elements = _max - static_cast<double>(_t_queue->size_approx());
             auto progress = 100.0 * (finished_elements / static_cast<double>(_max));
             auto speed = finished_elements / secs;
-            std::cout << std::fixed << std::setprecision(2) << progress << " % at " << speed << " pairs/s \r";
+            int finished_tests = 0;
+            for (auto stat : _stats) {
+                finished_tests += stat->test_count;
+            }
+            std::cout << std::fixed << std::setprecision(2) << progress << " % at " << speed << " pairs/s. Finished tests: " << finished_tests << "\r";
             std::cout.flush();
 
             std::this_thread::sleep_for(sec);
