@@ -16,8 +16,15 @@
 // -------------
 
 std::shared_ptr<PCAlgorithm> run_pc(
-    std::shared_ptr<arma::mat> data, double alpha, int nr_threads, std::string test_name) {
-    auto alg = std::make_shared<PCAlgorithm>(data, alpha, nr_threads, test_name);
+    std::shared_ptr<arma::mat> data,
+    double alpha,
+    int nr_threads,
+    std::string test_name,
+    int max_level,
+    bool save_snapshots,
+    bool orient_edges) {
+    auto alg =
+        std::make_shared<PCAlgorithm>(data, alpha, nr_threads, test_name, max_level, save_snapshots, orient_edges);
 
     auto colp = data->colptr(0);
 
@@ -34,7 +41,13 @@ namespace py = pybind11;
 
 // wrap C++ function with NumPy array IO
 py::tuple py_skeleton(
-    py::array_t<double, py::array::f_style> array, double alpha, int nr_threads, std::string test_name = "pearson") {
+    py::array_t<double, py::array::f_style> array,
+    double alpha,
+    int nr_threads,
+    std::string test_name = "pearson",
+    int max_level = std::numeric_limits<int>::max(),
+    bool save_snapshots = false,
+    bool orient_edges = false) {
     // check input dimensions
     if (array.ndim() != 2) throw std::runtime_error("Input should be 2-D NumPy array");
 
@@ -49,21 +62,20 @@ py::tuple py_skeleton(
         /*copy_aux_mem*/ false,
         /*strict*/ true);
 
-    auto alg = run_pc(mat, alpha, nr_threads, test_name);
+    auto alg = run_pc(mat, alpha, nr_threads, test_name, max_level, save_snapshots, orient_edges);
     auto edges = alg->get_edges_with_weight();
 
     size_t ndim = 2;
     std::vector<size_t> shape = {edges.size() / 3, 3};
     std::vector<size_t> strides = {sizeof(double) * 3, sizeof(double)};
 
-    auto edge_array = py::array(
-        py::buffer_info(
-            edges.data(),                            /* data as contiguous array  */
-            sizeof(double),                          /* size of one scalar        */
-            py::format_descriptor<double>::format(), /* data type                 */
-            ndim,                                    /* number of dimensions      */
-            shape,                                   /* shape of the matrix       */
-            strides /* strides for each axis     */));
+    auto edge_array = py::array(py::buffer_info(
+        edges.data(),                            /* data as contiguous array  */
+        sizeof(double),                          /* size of one scalar        */
+        py::format_descriptor<double>::format(), /* data type                 */
+        ndim,                                    /* number of dimensions      */
+        shape,                                   /* shape of the matrix       */
+        strides /* strides for each axis     */));
 
     auto separation_matrix = alg->get_separation_matrix();
     auto separation_sets = py::dict();

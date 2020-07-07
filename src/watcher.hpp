@@ -5,16 +5,18 @@
 
 #include "concurrency.hpp"
 
+template <typename T>
 class Watcher {
  public:
-    Watcher(TaskQueue t_queue, int max, std::vector<std::shared_ptr<Statistics> >& stats);
+    Watcher(T t_queue, int max, std::vector<std::shared_ptr<Statistics> >& stats, std::shared_ptr<bool> stop_flag);
 
     void watch();
 
     void set_max(int new_max);
 
  protected:
-    TaskQueue _t_queue;
+    T _t_queue;
     int _max;
     std::vector<std::shared_ptr<Statistics> >& _stats;
+    std::shared_ptr<bool> _stop_flag;
 };

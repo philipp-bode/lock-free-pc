@@ -36,6 +36,8 @@ void VStructureWorker::_execute_search(int sep_idx, int node1, int node2, int Y,
             }
         }
         auto p = _alg->test(node1, node2, subset);
+        increment_stat(_statistics->test_count);
+
         if (p > max_p) {
             max_p = p;
             if (!contains_Y) update_result(sep_idx, subset, p);

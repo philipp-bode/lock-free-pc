@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -25,7 +26,14 @@ class PCAlgorithm : public std::enable_shared_from_this<PCAlgorithm> {
  public:
     enum class Correlation { PEARSON, SPEARMAN };
 
-    PCAlgorithm(std::shared_ptr<arma::mat> data, double alpha, int numberThreads, std::string test_name = "pearson");
+    PCAlgorithm(
+        std::shared_ptr<arma::mat> data,
+        double alpha,
+        int number_of_threads,
+        std::string test_name = "pearson",
+        int max_level = std::numeric_limits<int>::max(),
+        bool save_snapshots = false,
+        bool orient_edges = false);
     double _alpha;
     void build_graph();
     void test_v_structures();
@@ -53,6 +61,9 @@ class PCAlgorithm : public std::enable_shared_from_this<PCAlgorithm> {
     int _nr_variables;
     int _nr_samples;
     int _nr_threads;
+    int _max_level;
+    bool _save_snapshots;
+    bool _orient_edges;
     PCAlgorithm::Correlation _correlation_type;
     std::shared_ptr<arma::mat> _data;
     std::shared_ptr<Graph> _graph;

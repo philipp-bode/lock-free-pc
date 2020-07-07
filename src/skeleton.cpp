@@ -4,8 +4,22 @@
 #include "watcher.hpp"
 #include "worker.hpp"
 
-PCAlgorithm::PCAlgorithm(std::shared_ptr<arma::mat> data, double alpha, int numberThreads, std::string test_name)
-    : _alpha(alpha), _data(data), _nr_variables(data->n_cols), _nr_samples(data->n_rows), _nr_threads(numberThreads) {
+PCAlgorithm::PCAlgorithm(
+    std::shared_ptr<arma::mat> data,
+    double alpha,
+    int number_of_threads,
+    std::string test_name,
+    int max_level,
+    bool save_snapshots,
+    bool orient_edges)
+    : _alpha(alpha),
+      _data(data),
+      _nr_variables(data->n_cols),
+      _nr_samples(data->n_rows),
+      _nr_threads(number_of_threads),
+      _max_level(max_level),
+      _save_snapshots(save_snapshots),
+      _orient_edges(orient_edges) {
     auto search = _test_names.find(test_name);
     if (search != _test_names.end()) {
         _correlation_type = search->second;
@@ -63,7 +77,7 @@ void PCAlgorithm::build_graph() {
         set_time(end_queue);
         double duration_queue = 0.0;
         add_time_to(duration_queue, start_queue, end_queue);
-        if (queue_size) {
+        if (queue_size && level <= _max_level) {
             std::cout << "-------- Level " << level << " --------" << std::endl;
             std::cout << "Queued all " << queue_size << " pairs, waiting for results.." << std::endl;
 
@@ -75,25 +89,27 @@ void PCAlgorithm::build_graph() {
             set_time(start_worker);
             rep(i, _nr_threads) {
                 stats[i] = std::make_shared<Statistics>();
-                workers.push_back(
-                    std::make_shared<Worker>(
-                        _work_queue,
-                        shared_from_this(),
-                        level,
-                        _graph,
-                        _working_graph,
-                        _separation_matrix,
-                        stats[i],
-                        _data,
-                        _correlation_type));
+                workers.push_back(std::make_shared<Worker>(
+                    _work_queue,
+                    shared_from_this(),
+                    level,
+                    _graph,
+                    _working_graph,
+                    _separation_matrix,
+                    stats[i],
+                    _data,
+                    _correlation_type));
                 threads.push_back(std::make_shared<std::thread>(&Worker::execute_test, *workers[i]));
             }
-            auto watcher = Watcher(_work_queue, queue_size, stats);
-            auto watcher_thread = std::make_shared<std::thread>(&Watcher::watch, watcher);
+            auto stop_watcher_flag = std::make_shared<bool>(false);
+            auto watcher = Watcher<TaskQueue>(_work_queue, queue_size, stats, stop_watcher_flag);
+            auto watcher_thread = std::make_shared<std::thread>(&Watcher<TaskQueue>::watch, watcher);
 
             for (const auto& thread : threads) {
                 thread->join();
             }
+
+            (*stop_watcher_flag) = true;
             watcher_thread->join();
 
             set_time(end_worker);
@@ -120,7 +136,11 @@ void PCAlgorithm::build_graph() {
             std::cout << "-------------------------" << std::endl << std::endl;
             stats.resize(0);
         } else {
-            std::cout << "No tests left for level " << level << '.' << std::endl;
+            if (level > _max_level) {
+                std::cout << "Reached maximum level of " << level - 1 << '.' << std::endl;
+            } else {
+                std::cout << "No tests left for level " << level << '.' << std::endl;
+            }
             _graph = std::make_shared<Graph>(*_working_graph);
             break;
         }
@@ -129,12 +149,17 @@ void PCAlgorithm::build_graph() {
             nodes_to_be_tested.erase(node);
         }
         _graph = std::make_shared<Graph>(*_working_graph);
+        if (_save_snapshots)
+            persist_result(
+                "snapshot" + std::to_string(_nr_variables) + "x" + std::to_string(_nr_samples) + "_" +
+                    std::to_string(level),
+                {});
         level++;
     }
 
     std::cout << "Total independence tests made: " << total_tests << std::endl;
     // _graph->print_list();
-    // test_v_structures();
+    if (_orient_edges) test_v_structures();
 }
 
 bool compareByP(const std::shared_ptr<VStructureResult>& a, const std::shared_ptr<VStructureResult>& b) {
@@ -188,12 +213,16 @@ void PCAlgorithm::test_v_structures() {
     }
 
     int queue_size = 0;
-    auto watcher = Watcher(_work_queue, queue_size, stats);
-    auto watcher_thread = std::make_shared<std::thread>(&Watcher::watch, watcher);
+
+    auto stop_watcher_flag = std::make_shared<bool>(false);
+    auto watcher = Watcher<VStructureQueue>(queue, queue_size, stats, stop_watcher_flag);
+    auto watcher_thread = std::make_shared<std::thread>(&Watcher<VStructureQueue>::watch, watcher);
 
     for (const auto& thread : threads) {
         thread->join();
     }
+
+    (*stop_watcher_flag) = true;
     watcher_thread->join();
 
     int not_nulls = 0;
