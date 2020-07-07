@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1593783571974,
+  "lastUpdate": 1594159508523,
   "repoUrl": "https://github.com/philipp-bode/lock-free-pc",
   "entries": {
     "Python Benchmark with pytest-benchmark": [
@@ -217,6 +217,37 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.1658616833902698",
             "extra": "mean: 5.295972771400005 sec\nrounds: 5"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "philipp.bode@student.hpi.de",
+            "name": "philipp.bode",
+            "username": "philipp-bode"
+          },
+          "committer": {
+            "email": "philipp.bode@student.hpi.de",
+            "name": "philipp.bode",
+            "username": "philipp-bode"
+          },
+          "distinct": true,
+          "id": "bcccf752c4324920e4b56e0f72c8a032bc809b00",
+          "message": "Adds options to save snapshots, enable PC-MAX and max level breakoff.",
+          "timestamp": "2020-07-08T00:02:24+02:00",
+          "tree_id": "e6fc7142a9f780af2e93a418bd0b0c06c2698517",
+          "url": "https://github.com/philipp-bode/lock-free-pc/commit/bcccf752c4324920e4b56e0f72c8a032bc809b00"
+        },
+        "date": 1594159508224,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "tests/regression/test_skeleton_performance.py::test_skeleton_performance",
+            "value": 0.17649663416959802,
+            "unit": "iter/sec",
+            "range": "stddev: 0.13369458810296003",
+            "extra": "mean: 5.665830426200006 sec\nrounds: 5"
           }
         ]
       }
